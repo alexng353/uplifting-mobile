@@ -29,3 +29,9 @@ yarn-error.log*
 
 # Optional eslint cache
 .eslintcache
+
+# postinstall cache
+.postinstall.json
+
+# api-openapi-gen
+src/lib/api-openapi-gen
