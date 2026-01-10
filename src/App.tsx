@@ -37,16 +37,14 @@ import "@ionic/react/css/palettes/dark.system.css";
 /* Theme variables */
 import "./theme/variables.css";
 
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 /* Pages */
 import Friends from "./pages/friends/Friends";
+import Login from "./pages/login/Login";
 import Me from "./pages/me/Me";
 import Settings from "./pages/settings/Settings";
 import Stats from "./pages/stats/Stats";
 import Workout from "./pages/workout/Workout";
-
-import { AuthProvider, useAuth } from "./hooks/useAuth";
-import Login from "./pages/login/Login";
-import { useEffect } from "react";
 
 setupIonicReact();
 
@@ -113,10 +111,6 @@ function UnauthenticatedRouter() {
 
 function AppContent() {
 	const { isAuthenticated, isLoading } = useAuth();
-
-	useEffect(() => {
-		console.log("isAuthenticated", isAuthenticated);
-	}, [isAuthenticated]);
 
 	return (
 		<IonApp>

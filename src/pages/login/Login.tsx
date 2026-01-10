@@ -10,8 +10,8 @@ import {
 } from "@ionic/react";
 import { useCallback, useState } from "react";
 import "./Login.css";
-import { api } from "../../lib/api";
 import { useAuth } from "../../hooks/useAuth";
+import { api } from "../../lib/api";
 
 export default function Login() {
 	const { login } = useAuth();
