@@ -2,6 +2,7 @@ import {
 	IonApp,
 	IonIcon,
 	IonLabel,
+	IonLoading,
 	IonRouterOutlet,
 	IonTabBar,
 	IonTabButton,
@@ -12,6 +13,7 @@ import { IonReactRouter } from "@ionic/react-router";
 import { barbell, people, person, settings, statsChart } from "ionicons/icons";
 import { Redirect, Route } from "react-router-dom";
 
+//#region Ionic CSS
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
 
@@ -27,16 +29,9 @@ import "@ionic/react/css/text-alignment.css";
 import "@ionic/react/css/text-transformation.css";
 import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
+//#endregion
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* import '@ionic/react/css/palettes/dark.always.css'; */
-/* import '@ionic/react/css/palettes/dark.class.css'; */
+// https://ionicframework.com/docs/theming/dark-mode
 import "@ionic/react/css/palettes/dark.system.css";
 
 /* Theme variables */
@@ -49,57 +44,83 @@ import Settings from "./pages/settings/Settings";
 import Stats from "./pages/stats/Stats";
 import Workout from "./pages/workout/Workout";
 
+import { useAuth } from "./hooks/useAuth";
+import Login from "./pages/login/Login";
+
 setupIonicReact();
 
-const App: React.FC = () => (
-	<IonApp>
-		<IonReactRouter>
-			<IonTabs>
-				<IonRouterOutlet>
-					<Route exact path="/me">
-						<Me />
-					</Route>
-					<Route exact path="/friends">
-						<Friends />
-					</Route>
-					<Route exact path="/workout">
-						<Workout />
-					</Route>
-					<Route exact path="/stats">
-						<Stats />
-					</Route>
-					<Route exact path="/settings">
-						<Settings />
-					</Route>
-					<Route exact path="/">
-						<Redirect to="/me" />
-					</Route>
-				</IonRouterOutlet>
-				<IonTabBar slot="bottom">
-					<IonTabButton tab="me" href="/me">
-						<IonIcon aria-hidden="true" icon={person} />
-						<IonLabel>Me</IonLabel>
-					</IonTabButton>
-					<IonTabButton tab="friends" href="/friends">
-						<IonIcon aria-hidden="true" icon={people} />
-						<IonLabel>Friends</IonLabel>
-					</IonTabButton>
-					<IonTabButton tab="workout" href="/workout">
-						<IonIcon aria-hidden="true" icon={barbell} />
-						<IonLabel>Workout</IonLabel>
-					</IonTabButton>
-					<IonTabButton tab="stats" href="/stats">
-						<IonIcon aria-hidden="true" icon={statsChart} />
-						<IonLabel>Stats</IonLabel>
-					</IonTabButton>
-					<IonTabButton tab="settings" href="/settings">
-						<IonIcon aria-hidden="true" icon={settings} />
-						<IonLabel>Settings</IonLabel>
-					</IonTabButton>
-				</IonTabBar>
-			</IonTabs>
-		</IonReactRouter>
-	</IonApp>
-);
+function AuthenticatedRouter() {
+	return (
+		<IonTabs>
+			<IonRouterOutlet>
+				<Route exact path="/me">
+					<Me />
+				</Route>
+				<Route exact path="/friends">
+					<Friends />
+				</Route>
+				<Route exact path="/workout">
+					<Workout />
+				</Route>
+				<Route exact path="/stats">
+					<Stats />
+				</Route>
+				<Route exact path="/settings">
+					<Settings />
+				</Route>
+				<Route exact path="/">
+					<Redirect to="/me" />
+				</Route>
+				<Redirect exact from="/login" to="/me" />
+			</IonRouterOutlet>
+			<IonTabBar slot="bottom">
+				<IonTabButton tab="me" href="/me">
+					<IonIcon aria-hidden="true" icon={person} />
+					<IonLabel>Me</IonLabel>
+				</IonTabButton>
+				<IonTabButton tab="friends" href="/friends">
+					<IonIcon aria-hidden="true" icon={people} />
+					<IonLabel>Friends</IonLabel>
+				</IonTabButton>
+				<IonTabButton tab="workout" href="/workout">
+					<IonIcon aria-hidden="true" icon={barbell} />
+					<IonLabel>Workout</IonLabel>
+				</IonTabButton>
+				<IonTabButton tab="stats" href="/stats">
+					<IonIcon aria-hidden="true" icon={statsChart} />
+					<IonLabel>Stats</IonLabel>
+				</IonTabButton>
+				<IonTabButton tab="settings" href="/settings">
+					<IonIcon aria-hidden="true" icon={settings} />
+					<IonLabel>Settings</IonLabel>
+				</IonTabButton>
+			</IonTabBar>
+		</IonTabs>
+	);
+}
+
+function UnauthenticatedRouter() {
+	return (
+		<IonRouterOutlet>
+			<Route exact path="/login">
+				<Login />
+			</Route>
+			<Redirect exact from="/" to="/login" />
+		</IonRouterOutlet>
+	);
+}
+
+function App() {
+	const { isAuthenticated, isLoading } = useAuth();
+
+	return (
+		<IonApp>
+			<IonReactRouter>
+				<IonLoading isOpen={isLoading} message="Loading..." />
+				{isAuthenticated ? <AuthenticatedRouter /> : <UnauthenticatedRouter />}
+			</IonReactRouter>
+		</IonApp>
+	);
+}
 
 export default App;

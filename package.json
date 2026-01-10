@@ -12,6 +12,7 @@
 		"lint": "biome check --write"
 	},
 	"dependencies": {
+		"@aparajita/capacitor-secure-storage": "^7.1.6",
 		"@capacitor/app": "8.0.0",
 		"@capacitor/core": "8.0.0",
 		"@capacitor/haptics": "8.0.0",
