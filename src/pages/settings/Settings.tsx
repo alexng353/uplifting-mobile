@@ -1,4 +1,5 @@
 import {
+	IonButton,
 	IonContent,
 	IonHeader,
 	IonPage,
@@ -7,8 +8,10 @@ import {
 } from "@ionic/react";
 import ExploreContainer from "../../components/ExploreContainer";
 import "./Settings.css";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Settings() {
+	const { logout } = useAuth();
 	return (
 		<IonPage>
 			<IonHeader>
@@ -23,6 +26,7 @@ export default function Settings() {
 					</IonToolbar>
 				</IonHeader>
 				<ExploreContainer name="Settings page" />
+				<IonButton onClick={logout}>Logout</IonButton>
 			</IonContent>
 		</IonPage>
 	);

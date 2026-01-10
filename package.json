@@ -4,7 +4,9 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
+		"dev": "bun scripts/watch-openapi.ts & vite",
+		"dev:vite": "vite",
+		"dev:watch": "bun scripts/watch-openapi.ts",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
 		"test.e2e": "cypress run",

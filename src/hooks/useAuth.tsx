@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useState,
+	type ReactNode,
+} from "react";
 import {
 	clearTokens,
 	getAccessToken,
@@ -13,7 +20,15 @@ interface AuthState {
 	refreshToken: string | null;
 }
 
-export function useAuth() {
+interface AuthContextValue extends AuthState {
+	login: (accessToken: string, refreshToken?: string) => Promise<void>;
+	logout: () => Promise<void>;
+	checkAuth: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
 	const [state, setState] = useState<AuthState>({
 		isAuthenticated: false,
 		isLoading: true,
@@ -71,10 +86,24 @@ export function useAuth() {
 		});
 	}, []);
 
-	return {
-		...state,
-		login,
-		logout,
-		checkAuth,
-	};
+	return (
+		<AuthContext.Provider
+			value={{
+				...state,
+				login,
+				logout,
+				checkAuth,
+			}}
+		>
+			{children}
+		</AuthContext.Provider>
+	);
+}
+
+export function useAuth() {
+	const context = useContext(AuthContext);
+	if (!context) {
+		throw new Error("useAuth must be used within an AuthProvider");
+	}
+	return context;
 }

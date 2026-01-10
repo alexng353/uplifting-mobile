@@ -44,8 +44,9 @@ import Settings from "./pages/settings/Settings";
 import Stats from "./pages/stats/Stats";
 import Workout from "./pages/workout/Workout";
 
-import { useAuth } from "./hooks/useAuth";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 import Login from "./pages/login/Login";
+import { useEffect } from "react";
 
 setupIonicReact();
 
@@ -105,13 +106,17 @@ function UnauthenticatedRouter() {
 			<Route exact path="/login">
 				<Login />
 			</Route>
-			<Redirect exact from="/" to="/login" />
+			<Route render={() => <Redirect to="/login" />} />
 		</IonRouterOutlet>
 	);
 }
 
-function App() {
+function AppContent() {
 	const { isAuthenticated, isLoading } = useAuth();
+
+	useEffect(() => {
+		console.log("isAuthenticated", isAuthenticated);
+	}, [isAuthenticated]);
 
 	return (
 		<IonApp>
@@ -120,6 +125,14 @@ function App() {
 				{isAuthenticated ? <AuthenticatedRouter /> : <UnauthenticatedRouter />}
 			</IonReactRouter>
 		</IonApp>
+	);
+}
+
+function App() {
+	return (
+		<AuthProvider>
+			<AppContent />
+		</AuthProvider>
 	);
 }
 

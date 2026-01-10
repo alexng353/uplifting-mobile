@@ -10,8 +10,11 @@ import {
 } from "@ionic/react";
 import { useCallback, useState } from "react";
 import "./Login.css";
+import { api } from "../../lib/api";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Login() {
+	const { login } = useAuth();
 	const [isRegistering, setIsRegistering] = useState(false);
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
@@ -20,13 +23,35 @@ export default function Login() {
 
 	const title = isRegistering ? "Register" : "Login";
 
-	const handleLogin = useCallback(() => {
-		console.log("login", username, password);
-	}, [username, password]);
+	const handleLogin = useCallback(async () => {
+		const { data, error } = await api.login({
+			body: {
+				username,
+				password,
+			},
+		});
+		if (error || !data) {
+			console.error("Failed to login", error);
+			return;
+		}
+		await login(data);
+	}, [username, password, login]);
 
-	const handleRegister = useCallback(() => {
-		console.log("register", username, password, realName, email);
-	}, [username, password, realName, email]);
+	const handleRegister = useCallback(async () => {
+		const { data, error } = await api.signup({
+			body: {
+				username,
+				password,
+				real_name: realName,
+				email,
+			},
+		});
+		if (error || !data) {
+			console.error("Failed to register", error);
+			return;
+		}
+		await login(data);
+	}, [username, password, realName, email, login]);
 
 	const handleClick = useCallback(() => {
 		if (isRegistering) {
