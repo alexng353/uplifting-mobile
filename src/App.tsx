@@ -9,11 +9,8 @@ import {
 	setupIonicReact,
 } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import { ellipse, square, triangle } from "ionicons/icons";
+import { barbell, people, person, settings, statsChart } from "ionicons/icons";
 import { Redirect, Route } from "react-router-dom";
-import Tab1 from "./pages/Tab1";
-import Tab2 from "./pages/Tab2";
-import Tab3 from "./pages/Tab3";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -45,6 +42,13 @@ import "@ionic/react/css/palettes/dark.system.css";
 /* Theme variables */
 import "./theme/variables.css";
 
+/* Pages */
+import Friends from "./pages/friends/Friends";
+import Me from "./pages/me/Me";
+import Settings from "./pages/settings/Settings";
+import Stats from "./pages/stats/Stats";
+import Workout from "./pages/workout/Workout";
+
 setupIonicReact();
 
 const App: React.FC = () => (
@@ -52,31 +56,45 @@ const App: React.FC = () => (
 		<IonReactRouter>
 			<IonTabs>
 				<IonRouterOutlet>
-					<Route exact path="/tab1">
-						<Tab1 />
+					<Route exact path="/me">
+						<Me />
 					</Route>
-					<Route exact path="/tab2">
-						<Tab2 />
+					<Route exact path="/friends">
+						<Friends />
 					</Route>
-					<Route path="/tab3">
-						<Tab3 />
+					<Route exact path="/workout">
+						<Workout />
+					</Route>
+					<Route exact path="/stats">
+						<Stats />
+					</Route>
+					<Route exact path="/settings">
+						<Settings />
 					</Route>
 					<Route exact path="/">
-						<Redirect to="/tab1" />
+						<Redirect to="/me" />
 					</Route>
 				</IonRouterOutlet>
 				<IonTabBar slot="bottom">
-					<IonTabButton tab="tab1" href="/tab1">
-						<IonIcon aria-hidden="true" icon={triangle} />
-						<IonLabel>Tab 1</IonLabel>
+					<IonTabButton tab="me" href="/me">
+						<IonIcon aria-hidden="true" icon={person} />
+						<IonLabel>Me</IonLabel>
 					</IonTabButton>
-					<IonTabButton tab="tab2" href="/tab2">
-						<IonIcon aria-hidden="true" icon={ellipse} />
-						<IonLabel>Tab 2</IonLabel>
+					<IonTabButton tab="friends" href="/friends">
+						<IonIcon aria-hidden="true" icon={people} />
+						<IonLabel>Friends</IonLabel>
 					</IonTabButton>
-					<IonTabButton tab="tab3" href="/tab3">
-						<IonIcon aria-hidden="true" icon={square} />
-						<IonLabel>Tab 3</IonLabel>
+					<IonTabButton tab="workout" href="/workout">
+						<IonIcon aria-hidden="true" icon={barbell} />
+						<IonLabel>Workout</IonLabel>
+					</IonTabButton>
+					<IonTabButton tab="stats" href="/stats">
+						<IonIcon aria-hidden="true" icon={statsChart} />
+						<IonLabel>Stats</IonLabel>
+					</IonTabButton>
+					<IonTabButton tab="settings" href="/settings">
+						<IonIcon aria-hidden="true" icon={settings} />
+						<IonLabel>Settings</IonLabel>
 					</IonTabButton>
 				</IonTabBar>
 			</IonTabs>
