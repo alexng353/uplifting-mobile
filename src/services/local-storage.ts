@@ -1,4 +1,4 @@
-import { get, set, del, clear } from "idb-keyval";
+import { clear, del, get, set } from "idb-keyval";
 
 // Storage keys
 export const STORAGE_KEYS = {
@@ -107,9 +107,7 @@ export async function getPreviousSets(): Promise<StoredPreviousSets> {
 	return (await get<StoredPreviousSets>(STORAGE_KEYS.PREVIOUS_SETS)) ?? {};
 }
 
-export async function setPreviousSets(
-	data: StoredPreviousSets,
-): Promise<void> {
+export async function setPreviousSets(data: StoredPreviousSets): Promise<void> {
 	await set(STORAGE_KEYS.PREVIOUS_SETS, data);
 }
 
