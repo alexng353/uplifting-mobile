@@ -1,0 +1,156 @@
+.start-workout-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	text-align: center;
+	padding: 2rem;
+}
+
+.start-workout-container h2 {
+	margin-bottom: 1rem;
+}
+
+.start-workout-container p {
+	color: var(--ion-color-medium);
+	margin-bottom: 2rem;
+}
+
+.workout-swiper {
+	height: 100%;
+}
+
+.workout-swiper .swiper-slide {
+	height: 100%;
+	overflow-y: auto;
+}
+
+.exercise-slide {
+	padding: 1rem;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.exercise-slide-header {
+	margin-bottom: 1rem;
+}
+
+.exercise-slide-header h2 {
+	margin: 0 0 0.5rem 0;
+}
+
+.exercise-slide-header p {
+	margin: 0;
+	color: var(--ion-color-medium);
+	font-size: 0.875rem;
+}
+
+.sets-container {
+	flex: 1;
+	overflow-y: auto;
+}
+
+.set-row {
+	display: grid;
+	grid-template-columns: 40px 1fr 1fr 1fr 40px;
+	gap: 0.5rem;
+	align-items: center;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--ion-color-light);
+}
+
+.set-row.header {
+	font-weight: 600;
+	font-size: 0.75rem;
+	color: var(--ion-color-medium);
+	text-transform: uppercase;
+}
+
+.set-number {
+	text-align: center;
+	font-weight: 600;
+}
+
+.previous-hint {
+	color: var(--ion-color-medium);
+	font-size: 0.75rem;
+}
+
+.add-set-button {
+	margin-top: 1rem;
+}
+
+.add-exercise-slide {
+	padding: 1rem;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.add-exercise-slide h2 {
+	margin: 0 0 1rem 0;
+}
+
+.exercise-list-container {
+	flex: 1;
+	overflow-y: auto;
+}
+
+.summary-content {
+	padding: 1rem;
+}
+
+.summary-stats {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1rem;
+	margin: 1rem 0;
+}
+
+.summary-stat {
+	background: var(--ion-color-light);
+	padding: 1rem;
+	border-radius: 8px;
+	text-align: center;
+}
+
+.summary-stat-value {
+	font-size: 1.5rem;
+	font-weight: 700;
+}
+
+.summary-stat-label {
+	font-size: 0.75rem;
+	color: var(--ion-color-medium);
+	text-transform: uppercase;
+}
+
+.summary-exercises {
+	margin-top: 1rem;
+}
+
+.summary-exercise {
+	padding: 0.75rem 0;
+	border-bottom: 1px solid var(--ion-color-light);
+}
+
+.summary-exercise-name {
+	font-weight: 600;
+}
+
+.summary-exercise-sets {
+	font-size: 0.875rem;
+	color: var(--ion-color-medium);
+}
+
+.summary-buttons {
+	display: flex;
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+.summary-buttons ion-button {
+	flex: 1;
+}

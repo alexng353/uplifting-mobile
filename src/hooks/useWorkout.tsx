@@ -59,10 +59,9 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 	// Load current workout on mount
 	useEffect(() => {
 		const loadWorkout = async () => {
-			const [current, pending, settings] = await Promise.all([
+			const [current, pending] = await Promise.all([
 				getCurrentWorkout(),
 				getPendingWorkout(),
-				getSettings(),
 			]);
 
 			setHasPendingWorkout(pending !== null);
