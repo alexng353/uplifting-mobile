@@ -36,32 +36,14 @@
 	margin-top: 1rem;
 }
 
-.muscle-chart-placeholder {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	height: 400px;
-	background: var(--ion-color-light);
-	border-radius: 12px;
-	text-align: center;
-}
-
-.muscle-chart-placeholder p {
-	margin: 0.5rem 0;
-	color: var(--ion-color-medium);
-}
-
-.muscle-chart-view {
-	font-size: 1.5rem;
-	font-weight: 600;
-	color: var(--ion-color-dark);
-}
-
 .muscle-legend {
 	display: flex;
-	gap: 1rem;
-	margin-top: 2rem;
+	justify-content: center;
+	gap: 1.5rem;
+	margin-top: 1.5rem;
+	padding: 1rem;
+	background: var(--ion-color-light);
+	border-radius: 8px;
 }
 
 .legend-item {

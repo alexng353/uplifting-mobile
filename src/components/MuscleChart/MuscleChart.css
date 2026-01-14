@@ -1,0 +1,41 @@
+.muscle-chart-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	max-width: 300px;
+	margin: 0 auto;
+}
+
+.muscle-chart-svg {
+	width: 100%;
+	height: auto;
+	max-height: 500px;
+}
+
+/* Muscle color customization - can be overridden */
+.muscle-chart-wrapper {
+	--muscle-color-primary: var(--ion-color-primary);
+	--muscle-color-secondary: var(--ion-color-primary-tint);
+	--muscle-color-none: var(--ion-color-medium-tint);
+}
+
+/* Smooth transitions for color changes */
+.muscle-chart-svg rect,
+.muscle-chart-svg path {
+	transition: fill 0.3s ease;
+}
+
+/* Hover effect for interactive charts (optional) */
+.muscle-chart-svg rect:hover,
+.muscle-chart-svg path:hover {
+	filter: brightness(1.1);
+	cursor: pointer;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+	.muscle-chart-wrapper {
+		--muscle-color-none: var(--ion-color-medium-shade);
+	}
+}

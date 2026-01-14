@@ -10,17 +10,38 @@ import {
 	IonToolbar,
 } from "@ionic/react";
 import { refresh, warning } from "ionicons/icons";
-import { useState } from "react";
-import "./Me.css";
+import { useMemo, useState } from "react";
+import {
+	calculateMusclePercentage,
+	MuscleChart,
+	type MuscleStatusMap,
+} from "../../components/MuscleChart";
 import { useSync } from "../../hooks/useSync";
+import "./Me.css";
 
 export default function Me() {
 	const { isOnline, hasPendingWorkout, isSyncing, lastSyncTime, forceSync } =
 		useSync();
 	const [view, setView] = useState<"front" | "back">("front");
 
-	// TODO: Calculate actual muscle coverage from workouts
-	const musclePercentage = 65;
+	// TODO: Compute from actual workout data via API
+	// For now, demo data showing some muscles trained
+	const trainedMuscles: MuscleStatusMap = useMemo(
+		() => ({
+			// Primary (directly trained)
+			chest: "primary",
+			front_delts: "primary",
+			quads: "primary",
+			glutes: "primary",
+			// Secondary (assisted)
+			triceps: "secondary",
+			abs: "secondary",
+			hamstrings: "secondary",
+		}),
+		[],
+	);
+
+	const musclePercentage = calculateMusclePercentage(trainedMuscles);
 
 	return (
 		<IonPage>
@@ -71,25 +92,20 @@ export default function Me() {
 					</IonSegment>
 
 					<div className="muscle-chart-container">
-						{/* Placeholder for muscle chart */}
-						<div className="muscle-chart-placeholder">
-							<p>Muscle Chart</p>
-							<p className="muscle-chart-view">
-								{view === "front" ? "Front View" : "Back View"}
-							</p>
-							<div className="muscle-legend">
-								<div className="legend-item">
-									<span className="legend-color untrained" />
-									<span>Untrained</span>
-								</div>
-								<div className="legend-item">
-									<span className="legend-color secondary" />
-									<span>Secondary</span>
-								</div>
-								<div className="legend-item">
-									<span className="legend-color primary" />
-									<span>Primary</span>
-								</div>
+						<MuscleChart muscles={trainedMuscles} view={view} />
+
+						<div className="muscle-legend">
+							<div className="legend-item">
+								<span className="legend-color untrained" />
+								<span>Untrained</span>
+							</div>
+							<div className="legend-item">
+								<span className="legend-color secondary" />
+								<span>Secondary</span>
+							</div>
+							<div className="legend-item">
+								<span className="legend-color primary" />
+								<span>Primary</span>
 							</div>
 						</div>
 					</div>
