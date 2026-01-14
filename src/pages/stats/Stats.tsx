@@ -105,7 +105,10 @@ export default function Stats() {
 		});
 	};
 
-	const formatDuration = (start: string, end: string | null): string => {
+	const formatDuration = (
+		start: string,
+		end: string | null | undefined,
+	): string => {
 		if (!end) return "In progress";
 		const startDate = new Date(start);
 		const endDate = new Date(end);

@@ -14,15 +14,25 @@ import {
 	IonToolbar,
 } from "@ionic/react";
 import { logOut, personCircle, trash } from "ionicons/icons";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./Settings.css";
 import { useAuth } from "../../hooks/useAuth";
 import { useSettings } from "../../hooks/useSettings";
+import { api } from "../../lib/api";
+import type { UserProfile } from "../../lib/api-openapi-gen";
 import { clearAllData } from "../../services/local-storage";
 
 export default function Settings() {
-	const { user, logout } = useAuth();
+	const { logout, isAuthenticated } = useAuth();
 	const { settings, updateSettings } = useSettings();
+	const [user, setUser] = useState<UserProfile | null>(null);
+
+	useEffect(() => {
+		if (!isAuthenticated) return;
+		api.getMe().then(({ data }) => {
+			if (data) setUser(data);
+		});
+	}, [isAuthenticated]);
 
 	const handleLogout = useCallback(async () => {
 		await clearAllData();
