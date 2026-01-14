@@ -1,7 +1,6 @@
 /**
  * FRONT VIEW MUSCLE CHART SVG
- * Clean placeholder shapes for muscle visualization
- * Designer can replace these with proper anatomical paths
+ * Clean stylized body with muscle groups
  */
 
 interface Props {
@@ -12,211 +11,246 @@ export function MuscleChartFront({ getColor }: Props) {
 	return (
 		<svg viewBox="0 0 200 400" className="muscle-chart-svg" role="img">
 			<title>Front view muscle chart</title>
-			{/* Body outline - simple silhouette */}
-			<ellipse cx="100" cy="30" rx="22" ry="28" fill="#444" /> {/* Head */}
-			<rect x="92" y="55" width="16" height="20" rx="4" fill="#444" />{" "}
-			{/* Neck */}
+
+			{/* Body silhouette */}
 			<path
-				d="M60 75 Q40 85 35 130 L35 220 Q38 240 50 250 L50 380 L70 380 L75 260 L85 260 L85 380 L95 380 L100 180 L105 380 L115 380 L115 260 L125 260 L130 380 L150 380 L150 250 Q162 240 165 220 L165 130 Q160 85 140 75 Z"
-				fill="#444"
+				d={`
+					M100 5
+					C118 5 122 18 122 28
+					C122 40 114 48 108 52
+					L108 58
+					C130 62 148 75 155 98
+					L165 102 L176 148 L180 195
+					L166 200 L152 142 L145 100
+					L145 168 L138 198
+					L130 360 L126 372 L118 374
+					L108 218 L100 222
+					L92 218 L82 374 L74 372 L70 360
+					L62 198 L55 168
+					L55 100 L48 142 L34 200
+					L20 195 L24 148 L35 102
+					L45 98 C52 75 70 62 92 58
+					L92 52
+					C86 48 78 40 78 28
+					C78 18 82 5 100 5
+					Z
+				`}
+				fill="#3a3a3a"
 			/>
-			{/* === FRONT MUSCLES === */}
-			{/* Chest - Pectoralis */}
+
+			{/* Feet */}
+			<ellipse cx="78" cy="380" rx="12" ry="6" fill="#3a3a3a" />
+			<ellipse cx="122" cy="380" rx="12" ry="6" fill="#3a3a3a" />
+
+			{/* === MUSCLES === */}
+
+			{/* Chest */}
 			<ellipse
-				cx="75"
-				cy="105"
-				rx="22"
+				cx="78"
+				cy="102"
+				rx="20"
 				ry="15"
 				fill={getColor("chest")}
 				data-muscle="chest"
 			/>
 			<ellipse
-				cx="125"
-				cy="105"
-				rx="22"
+				cx="122"
+				cy="102"
+				rx="20"
 				ry="15"
 				fill={getColor("chest")}
 				data-muscle="chest"
 			/>
+
 			{/* Front Delts */}
 			<ellipse
-				cx="52"
-				cy="90"
+				cx="56"
+				cy="85"
 				rx="10"
-				ry="14"
+				ry="13"
 				fill={getColor("front_delts")}
 				data-muscle="front_delts"
 			/>
 			<ellipse
-				cx="148"
-				cy="90"
+				cx="144"
+				cy="85"
 				rx="10"
-				ry="14"
+				ry="13"
 				fill={getColor("front_delts")}
 				data-muscle="front_delts"
 			/>
+
+			{/* Side Delts */}
+			<ellipse
+				cx="46"
+				cy="90"
+				rx="6"
+				ry="11"
+				fill={getColor("side_delts")}
+				data-muscle="side_delts"
+			/>
+			<ellipse
+				cx="154"
+				cy="90"
+				rx="6"
+				ry="11"
+				fill={getColor("side_delts")}
+				data-muscle="side_delts"
+			/>
+
 			{/* Biceps */}
 			<ellipse
-				cx="42"
-				cy="130"
+				cx="40"
+				cy="122"
 				rx="8"
-				ry="20"
+				ry="18"
 				fill={getColor("biceps")}
 				data-muscle="biceps"
 			/>
 			<ellipse
-				cx="158"
-				cy="130"
+				cx="160"
+				cy="122"
 				rx="8"
-				ry="20"
+				ry="18"
 				fill={getColor("biceps")}
 				data-muscle="biceps"
 			/>
-			{/* Forearms (front) */}
+
+			{/* Triceps (visible from front) */}
 			<ellipse
-				cx="38"
-				cy="175"
+				cx="34"
+				cy="118"
+				rx="4"
+				ry="13"
+				fill={getColor("triceps")}
+				data-muscle="triceps"
+			/>
+			<ellipse
+				cx="166"
+				cy="118"
+				rx="4"
+				ry="13"
+				fill={getColor("triceps")}
+				data-muscle="triceps"
+			/>
+
+			{/* Forearms */}
+			<ellipse
+				cx="32"
+				cy="162"
 				rx="6"
-				ry="22"
+				ry="18"
 				fill={getColor("forearms_front")}
 				data-muscle="forearms_front"
 			/>
 			<ellipse
-				cx="162"
-				cy="175"
+				cx="168"
+				cy="162"
 				rx="6"
-				ry="22"
+				ry="18"
 				fill={getColor("forearms_front")}
 				data-muscle="forearms_front"
 			/>
-			{/* Abs - 6 pack representation */}
+
+			{/* Abs */}
 			<rect
-				x="88"
-				y="125"
-				width="24"
-				height="55"
-				rx="6"
+				x="86"
+				y="122"
+				width="28"
+				height="52"
+				rx="5"
 				fill={getColor("abs")}
 				data-muscle="abs"
 			/>
+
 			{/* Obliques */}
 			<ellipse
 				cx="75"
-				cy="145"
-				rx="8"
-				ry="18"
+				cy="142"
+				rx="9"
+				ry="22"
 				fill={getColor("obliques")}
 				data-muscle="obliques"
 			/>
 			<ellipse
 				cx="125"
-				cy="145"
-				rx="8"
-				ry="18"
+				cy="142"
+				rx="9"
+				ry="22"
 				fill={getColor("obliques")}
 				data-muscle="obliques"
 			/>
+
 			{/* Hip Flexors */}
 			<ellipse
-				cx="80"
+				cx="82"
 				cy="195"
-				rx="12"
-				ry="10"
+				rx="11"
+				ry="9"
 				fill={getColor("hip_flexors")}
 				data-muscle="hip_flexors"
+			/>
+			<ellipse
+				cx="118"
+				cy="195"
+				rx="11"
+				ry="9"
+				fill={getColor("hip_flexors")}
+				data-muscle="hip_flexors"
+			/>
+
+			{/* Quads */}
+			<ellipse
+				cx="80"
+				cy="275"
+				rx="16"
+				ry="58"
+				fill={getColor("quads")}
+				data-muscle="quads"
 			/>
 			<ellipse
 				cx="120"
-				cy="195"
-				rx="12"
-				ry="10"
-				fill={getColor("hip_flexors")}
-				data-muscle="hip_flexors"
-			/>
-			{/* Quads */}
-			<ellipse
-				cx="75"
-				cy="260"
+				cy="275"
 				rx="16"
-				ry="45"
+				ry="58"
 				fill={getColor("quads")}
 				data-muscle="quads"
 			/>
+
+			{/* Adductors */}
 			<ellipse
-				cx="125"
-				cy="260"
-				rx="16"
-				ry="45"
-				fill={getColor("quads")}
-				data-muscle="quads"
-			/>
-			{/* Adductors (inner thigh) */}
-			<ellipse
-				cx="88"
-				cy="250"
+				cx="92"
+				cy="252"
 				rx="6"
-				ry="30"
+				ry="26"
 				fill={getColor("adductors")}
 				data-muscle="adductors"
 			/>
 			<ellipse
-				cx="112"
-				cy="250"
+				cx="108"
+				cy="252"
 				rx="6"
-				ry="30"
+				ry="26"
 				fill={getColor("adductors")}
 				data-muscle="adductors"
 			/>
+
 			{/* Tibialis (shins) */}
 			<ellipse
-				cx="70"
-				cy="340"
-				rx="6"
-				ry="25"
+				cx="78"
+				cy="352"
+				rx="5"
+				ry="18"
 				fill={getColor("tibialis")}
 				data-muscle="tibialis"
 			/>
 			<ellipse
-				cx="130"
-				cy="340"
-				rx="6"
-				ry="25"
+				cx="122"
+				cy="352"
+				rx="5"
+				ry="18"
 				fill={getColor("tibialis")}
 				data-muscle="tibialis"
-			/>
-			{/* Side delts (visible from front) */}
-			<ellipse
-				cx="45"
-				cy="88"
-				rx="6"
-				ry="10"
-				fill={getColor("side_delts")}
-				data-muscle="side_delts"
-			/>
-			<ellipse
-				cx="155"
-				cy="88"
-				rx="6"
-				ry="10"
-				fill={getColor("side_delts")}
-				data-muscle="side_delts"
-			/>
-			{/* Triceps (visible from front/side) */}
-			<ellipse
-				cx="38"
-				cy="120"
-				rx="5"
-				ry="12"
-				fill={getColor("triceps")}
-				data-muscle="triceps"
-			/>
-			<ellipse
-				cx="162"
-				cy="120"
-				rx="5"
-				ry="12"
-				fill={getColor("triceps")}
-				data-muscle="triceps"
 			/>
 		</svg>
 	);
