@@ -18,6 +18,7 @@ import {
 } from "../../components/MuscleChart";
 import { useSync } from "../../hooks/useSync";
 import "./Me.css";
+import { Muscles } from "../../components/MuscleChart/Muscles";
 
 export default function Me() {
 	const { isOnline, hasPendingWorkout, isSyncing, lastSyncTime, forceSync } =
@@ -92,7 +93,7 @@ export default function Me() {
 					</IonSegment>
 
 					<div className="muscle-chart-container">
-						<MuscleChart muscles={trainedMuscles} view={view} />
+						<Muscles />
 
 						<div className="muscle-legend">
 							<div className="legend-item">
