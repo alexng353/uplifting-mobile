@@ -1,4 +1,5 @@
 import {
+	IonBadge,
 	IonButton,
 	IonButtons,
 	IonCard,
@@ -20,15 +21,21 @@ import {
 	IonTitle,
 	IonToolbar,
 } from "@ionic/react";
-import { personAdd, search } from "ionicons/icons";
+import { personAdd, notifications, search } from "ionicons/icons";
 import { useCallback, useState } from "react";
 import "./Friends.css";
 import { useFeed } from "../../hooks/useFeed";
+import { usePendingFriendRequests } from "../../hooks/usePendingFriendRequests";
 import FriendSearch from "./components/FriendSearch";
+import PendingRequests from "./components/PendingRequests";
 
 export default function Friends() {
 	const [showSearch, setShowSearch] = useState(false);
+	const [showPendingRequests, setShowPendingRequests] = useState(false);
 	const { data, isLoading, refetch, fetchNextPage, hasNextPage } = useFeed();
+	const { data: pendingRequests = [] } = usePendingFriendRequests();
+
+	const pendingCount = pendingRequests.length;
 
 	const feed = data?.pages.flat() ?? [];
 
@@ -69,6 +76,14 @@ export default function Friends() {
 				<IonToolbar>
 					<IonTitle>Friends</IonTitle>
 					<IonButtons slot="end">
+						<IonButton onClick={() => setShowPendingRequests(true)}>
+							<IonIcon slot="icon-only" icon={notifications} />
+							{pendingCount > 0 && (
+								<IonBadge color="danger" style={{ position: "absolute", top: 4, right: 4, fontSize: "10px", minWidth: "18px" }}>
+									{pendingCount > 9 ? "9+" : pendingCount}
+								</IonBadge>
+							)}
+						</IonButton>
 						<IonButton onClick={() => setShowSearch(true)}>
 							<IonIcon slot="icon-only" icon={search} />
 						</IonButton>
@@ -146,6 +161,10 @@ export default function Friends() {
 
 				<IonModal isOpen={showSearch} onDidDismiss={() => setShowSearch(false)}>
 					<FriendSearch onClose={() => setShowSearch(false)} />
+				</IonModal>
+
+				<IonModal isOpen={showPendingRequests} onDidDismiss={() => setShowPendingRequests(false)}>
+					<PendingRequests onClose={() => setShowPendingRequests(false)} />
 				</IonModal>
 			</IonContent>
 		</IonPage>

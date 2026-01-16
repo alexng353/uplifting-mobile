@@ -6,6 +6,7 @@ import {
 	IonPage,
 	IonText,
 	IonTitle,
+	IonToast,
 	IonToolbar,
 } from "@ionic/react";
 import { useCallback, useState } from "react";
@@ -23,6 +24,8 @@ export default function Login() {
 	const [password, setPassword] = useState("");
 	const [realName, setRealName] = useState("");
 	const [email, setEmail] = useState("");
+	const [errorMessage, setErrorMessage] = useState("");
+	const [showError, setShowError] = useState(false);
 
 	const loginMutation = useLoginMutation();
 	const signupMutation = useSignupMutation();
@@ -35,6 +38,8 @@ export default function Login() {
 			await login(data);
 		} catch (error) {
 			console.error("Failed to login", error);
+			setErrorMessage("Invalid username or password");
+			setShowError(true);
 		}
 	}, [username, password, login, loginMutation]);
 
@@ -49,6 +54,8 @@ export default function Login() {
 			await login(data);
 		} catch (error) {
 			console.error("Failed to register", error);
+			setErrorMessage("Registration failed. Username may already be taken.");
+			setShowError(true);
 		}
 	}, [username, password, realName, email, login, signupMutation]);
 
@@ -96,6 +103,9 @@ export default function Login() {
 							placeholder="Username"
 							value={username}
 							onIonInput={(e) => setUsername(e.detail.value ?? "")}
+							autocapitalize="off"
+							autocorrect="off"
+							spellcheck={false}
 						/>
 						<IonInput
 							type="password"
@@ -124,6 +134,15 @@ export default function Login() {
 						</div>
 					</div>
 				</div>
+
+				<IonToast
+					isOpen={showError}
+					onDidDismiss={() => setShowError(false)}
+					message={errorMessage}
+					duration={3000}
+					position="bottom"
+					color="danger"
+				/>
 			</IonContent>
 		</IonPage>
 	);
