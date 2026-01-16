@@ -33,7 +33,7 @@ async function getHash(file: Bun.BunFile) {
 }
 
 async function getOpenApiSource(): Promise<string> {
-	const localFile = Bun.file("openapi.json");
+	const localFile = Bun.file("openapi1.json");
 	// Check if symlink resolves to an existing file
 	if (await localFile.exists()) {
 		return "./openapi.json";
@@ -52,11 +52,17 @@ async function getOpenApiSource(): Promise<string> {
 		);
 	}
 	const content = await response.text();
-	await Bun.write("openapi.json", content);
+	await Bun.write("openapi1.json", content);
 	return "./openapi.json";
 }
 
 const openApiSource = await getOpenApiSource();
+
+const apiFile = Bun.file(openApiSource);
+if (!(await apiFile.exists())) {
+	throw new Error(`OpenAPI file not found at ${openApiSource}`);
+}
+
 const apiHash = await getHash(Bun.file(openApiSource));
 const packageJsonHash = await getHash(Bun.file("package.json"));
 
