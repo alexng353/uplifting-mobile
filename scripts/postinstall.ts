@@ -6,7 +6,7 @@ function boolFlag(args: string[], ...flags: string[]): boolean {
 	return args.some((arg) => flags.includes(arg));
 }
 
-const force = boolFlag(process.argv, "--force", "-f");
+const force = boolFlag(process.argv, "--force", "-f") || !!process.env.VERCEL;
 
 const Z_CacheData = z.object({
 	apiHash: z.string().nullable(),
@@ -32,7 +32,32 @@ async function getHash(file: Bun.BunFile) {
 	return hasher.digest("hex");
 }
 
-const apiHash = await getHash(Bun.file("openapi.json"));
+async function getOpenApiSource(): Promise<string> {
+	const localFile = Bun.file("openapi.json");
+	// Check if symlink resolves to an existing file
+	if (await localFile.exists()) {
+		return "./openapi.json";
+	}
+	// Fallback to remote API
+	const apiUrl = process.env.VITE_API_URL;
+	if (!apiUrl) {
+		throw new Error("Local openapi.json not found and VITE_API_URL is not set");
+	}
+	const remoteUrl = `${apiUrl}/docs/openapi.json`;
+	console.log(`Local openapi.json not found, fetching from ${remoteUrl}`);
+	const response = await fetch(remoteUrl);
+	if (!response.ok) {
+		throw new Error(
+			`Failed to fetch openapi.json from ${remoteUrl}: ${response.statusText}`,
+		);
+	}
+	const content = await response.text();
+	await Bun.write("openapi.json", content);
+	return "./openapi.json";
+}
+
+const openApiSource = await getOpenApiSource();
+const apiHash = await getHash(Bun.file(openApiSource));
 const packageJsonHash = await getHash(Bun.file("package.json"));
 
 if (
