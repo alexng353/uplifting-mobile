@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { api } from "../lib/api";
 import {
 	convertWeight,
 	DEFAULT_SETTINGS,
@@ -8,12 +7,16 @@ import {
 	setSettings as saveSettings,
 } from "../services/local-storage";
 import { useAuth } from "./useAuth";
+import { useServerSettings, useUpdateSettings } from "./useServerSettings";
 
 export function useSettings() {
 	const { isAuthenticated } = useAuth();
 	const [settings, setSettingsState] =
 		useState<StoredSettings>(DEFAULT_SETTINGS);
 	const [isLoading, setIsLoading] = useState(true);
+
+	const { data: serverSettings } = useServerSettings(isAuthenticated);
+	const updateSettingsMutation = useUpdateSettings();
 
 	// Load settings from local storage on mount
 	useEffect(() => {
@@ -25,21 +28,17 @@ export function useSettings() {
 
 	// Sync with server when authenticated
 	useEffect(() => {
-		if (!isAuthenticated) return;
-
-		api.getSettings().then(({ data, error }) => {
-			if (error || !data) return;
-			const serverSettings: StoredSettings = {
-				displayUnit: data.display_unit as "kg" | "lbs" | null,
-				maxWorkoutDurationMinutes: data.max_workout_duration_minutes,
-				defaultRestTimerSeconds: data.default_rest_timer_seconds,
-				defaultPrivacy: data.default_privacy,
-				shareGymLocation: data.share_gym_location,
-			};
-			setSettingsState(serverSettings);
-			saveSettings(serverSettings);
-		});
-	}, [isAuthenticated]);
+		if (!serverSettings) return;
+		const newSettings: StoredSettings = {
+			displayUnit: serverSettings.display_unit as "kg" | "lbs" | null,
+			maxWorkoutDurationMinutes: serverSettings.max_workout_duration_minutes,
+			defaultRestTimerSeconds: serverSettings.default_rest_timer_seconds,
+			defaultPrivacy: serverSettings.default_privacy,
+			shareGymLocation: serverSettings.share_gym_location,
+		};
+		setSettingsState(newSettings);
+		saveSettings(newSettings);
+	}, [serverSettings]);
 
 	const updateSettings = useCallback(
 		async (updates: Partial<StoredSettings>) => {
@@ -49,18 +48,10 @@ export function useSettings() {
 
 			// Sync to server if online
 			if (isAuthenticated) {
-				api.updateSettings({
-					body: {
-						display_unit: newSettings.displayUnit,
-						max_workout_duration_minutes: newSettings.maxWorkoutDurationMinutes,
-						default_rest_timer_seconds: newSettings.defaultRestTimerSeconds,
-						default_privacy: newSettings.defaultPrivacy,
-						share_gym_location: newSettings.shareGymLocation,
-					},
-				});
+				updateSettingsMutation.mutate(newSettings);
 			}
 		},
-		[settings, isAuthenticated],
+		[settings, isAuthenticated, updateSettingsMutation],
 	);
 
 	// Get display unit (auto-detect from locale if not set)

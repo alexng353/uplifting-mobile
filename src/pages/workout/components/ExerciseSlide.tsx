@@ -1,14 +1,5 @@
-import {
-	IonButton,
-	IonIcon,
-	IonInput,
-	IonItem,
-	IonItemOption,
-	IonItemOptions,
-	IonItemSliding,
-	IonList,
-} from "@ionic/react";
-import { add, trash } from "ionicons/icons";
+import { IonButton, IonIcon, IonInput, IonList } from "@ionic/react";
+import { add, arrowDown, close } from "ionicons/icons";
 import { useCallback, useEffect, useState } from "react";
 import { useSettings } from "../../../hooks/useSettings";
 import { useWorkout } from "../../../hooks/useWorkout";
@@ -62,6 +53,19 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 		[exercise.exerciseId, removeSet],
 	);
 
+	const handleFillFromPrevious = useCallback(
+		(setId: string, index: number) => {
+			const prev = previousSets[index];
+			if (!prev) return;
+			updateSet(exercise.exerciseId, setId, {
+				reps: prev.reps,
+				weight: prev.weight,
+				weightUnit: prev.weightUnit,
+			});
+		},
+		[exercise.exerciseId, previousSets, updateSet],
+	);
+
 	const getPlaceholder = (index: number, field: "reps" | "weight"): string => {
 		const prev = previousSets[index];
 		if (!prev) return field === "reps" ? "10" : "20";
@@ -86,45 +90,54 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 
 				<IonList>
 					{exercise.sets.map((set, index) => (
-						<IonItemSliding key={set.id}>
-							<IonItem lines="none">
-								<div className="set-row">
-									<div className="set-number">{index + 1}</div>
-									<div className="previous-hint">
-										{previousSets[index]
-											? `${previousSets[index].reps} × ${formatWeight(previousSets[index].weight, previousSets[index].weightUnit)}`
-											: "-"}
-									</div>
-									<IonInput
-										type="number"
-										value={set.reps}
-										onIonChange={(e) =>
-											updateSet(exercise.exerciseId, set.id, {
-												reps: Number(e.detail.value),
-											})
-										}
-									/>
-									<IonInput
-										type="number"
-										value={set.weight}
-										onIonChange={(e) =>
-											updateSet(exercise.exerciseId, set.id, {
-												weight: Number(e.detail.value),
-											})
-										}
-									/>
-									<div>{set.weightUnit}</div>
-								</div>
-							</IonItem>
-							<IonItemOptions side="end">
-								<IonItemOption
-									color="danger"
-									onClick={() => handleDelete(set.id)}
-								>
-									<IonIcon slot="icon-only" icon={trash} />
-								</IonItemOption>
-							</IonItemOptions>
-						</IonItemSliding>
+						<div key={set.id} className="set-row">
+							<div className="set-number">{index + 1}</div>
+							<div className="previous-hint">
+								{previousSets[index] ? (
+									<IonButton
+										fill="clear"
+										size="small"
+										className="fill-button"
+										onClick={() => handleFillFromPrevious(set.id, index)}
+									>
+										<IonIcon slot="start" icon={arrowDown} />
+										{previousSets[index].reps} ×{" "}
+										{formatWeight(
+											previousSets[index].weight,
+											previousSets[index].weightUnit,
+										)}
+									</IonButton>
+								) : (
+									"-"
+								)}
+							</div>
+							<IonInput
+								type="number"
+								value={set.reps}
+								onIonChange={(e) =>
+									updateSet(exercise.exerciseId, set.id, {
+										reps: Number(e.detail.value),
+									})
+								}
+							/>
+							<IonInput
+								type="number"
+								value={set.weight}
+								onIonChange={(e) =>
+									updateSet(exercise.exerciseId, set.id, {
+										weight: Number(e.detail.value),
+									})
+								}
+							/>
+							<IonButton
+								fill="clear"
+								color="danger"
+								size="small"
+								onClick={() => handleDelete(set.id)}
+							>
+								<IonIcon slot="icon-only" icon={close} />
+							</IonButton>
+						</div>
 					))}
 				</IonList>
 
@@ -153,12 +166,10 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 					/>
 					<div>{getDisplayUnit()}</div>
 				</div>
+			</div>
 
-				<IonButton
-					expand="block"
-					className="add-set-button"
-					onClick={handleAddSet}
-				>
+			<div className="add-set-button-container">
+				<IonButton className="add-set-button" onClick={handleAddSet}>
 					<IonIcon slot="start" icon={add} />
 					Add Set
 				</IonButton>

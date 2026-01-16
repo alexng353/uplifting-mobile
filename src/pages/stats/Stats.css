@@ -6,6 +6,7 @@
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
 	gap: 1rem;
+	margin-top: 1rem;
 }
 
 .stat-item {
@@ -43,4 +44,8 @@
 .workout-duration {
 	font-size: 0.875rem;
 	color: var(--ion-color-medium);
+}
+
+.pending-workout {
+	--background: var(--ion-color-warning-tint);
 }

@@ -1,93 +1,62 @@
-import { useCallback, useEffect, useState } from "react";
-import { api } from "../lib/api";
+import { useCallback, useMemo } from "react";
 import {
 	getLastSyncTime,
 	getPendingWorkout,
 	setLastSyncTime,
 	setPendingWorkout,
+	type StoredWorkout,
 	updatePreviousSets,
 } from "../services/local-storage";
-import { useAuth } from "./useAuth";
-import { useOnline } from "./useOnline";
+import type { SyncWorkoutRequest } from "../lib/api-openapi-gen/types.gen";
+import { useSyncedSave } from "./useSyncedSave";
+import { useSyncWorkout } from "./useSyncWorkout";
 
-interface SyncState {
-	isSyncing: boolean;
-	lastSyncTime: Date | null;
-	hasPendingWorkout: boolean;
-	error: string | null;
-}
-
+/**
+ * Hook for syncing workouts to the server.
+ * Uses the generic useSyncedSave hook with workout-specific configuration.
+ */
 export function useSync() {
-	const { isOnline } = useOnline();
-	const { isAuthenticated } = useAuth();
-	const [state, setState] = useState<SyncState>({
-		isSyncing: false,
-		lastSyncTime: null,
-		hasPendingWorkout: false,
-		error: null,
-	});
+	const syncWorkoutMutation = useSyncWorkout();
 
-	// Load initial state
-	useEffect(() => {
-		const load = async () => {
-			const [pending, lastSync] = await Promise.all([
-				getPendingWorkout(),
-				getLastSyncTime(),
-			]);
-			setState((prev) => ({
-				...prev,
-				hasPendingWorkout: pending !== null,
-				lastSyncTime: lastSync,
-			}));
-		};
-		load();
-	}, []);
+	// Memoize the sync function to prevent unnecessary re-renders
+	const syncRemote = useCallback(
+		async (data: SyncWorkoutRequest) => {
+			const result = await syncWorkoutMutation.mutateAsync(data);
+			return result;
+		},
+		[syncWorkoutMutation],
+	);
 
-	const forceSync = useCallback(async () => {
-		if (!isOnline || !isAuthenticated) {
-			setState((prev) => ({
-				...prev,
-				error: isOnline ? "Not authenticated" : "No internet connection",
-			}));
-			return false;
-		}
+	// Transform local workout to remote format
+	const toRemote = useCallback(
+		(local: StoredWorkout): SyncWorkoutRequest & { kind?: string } => ({
+			name: local.name,
+			start_time: local.startTime,
+			end_time: new Date().toISOString(),
+			privacy: local.privacy,
+			gym_location: local.gymLocation,
+			kind: local.kind,
+			exercises: local.exercises.map((e) => ({
+				exercise_id: e.exerciseId,
+				profile_id: e.profileId,
+				sets: e.sets.map((s) => ({
+					reps: s.reps,
+					weight: String(s.weight),
+					weight_unit: s.weightUnit,
+					created_at: s.createdAt,
+				})),
+			})),
+		}),
+		[],
+	);
 
-		const pending = await getPendingWorkout();
-		if (!pending) {
-			setState((prev) => ({ ...prev, hasPendingWorkout: false }));
-			return true;
-		}
-
-		setState((prev) => ({ ...prev, isSyncing: true, error: null }));
-
-		try {
-			const { data, error } = await api.syncWorkout({
-				body: {
-					name: pending.name,
-					start_time: pending.startTime,
-					end_time: new Date().toISOString(),
-					privacy: pending.privacy,
-					gym_location: pending.gymLocation,
-					exercises: pending.exercises.map((e) => ({
-						exercise_id: e.exerciseId,
-						profile_id: e.profileId,
-						sets: e.sets.map((s) => ({
-							reps: s.reps,
-							weight: String(s.weight),
-							weight_unit: s.weightUnit,
-							created_at: s.createdAt,
-						})),
-					})),
-				},
-			});
-
-			if (error || !data) {
-				throw new Error("Failed to sync workout");
-			}
-
-			// Update previous sets with server response
-			if (data.previous_sets) {
-				for (const ps of data.previous_sets) {
+	// Handle successful sync - update previous sets cache
+	const onSyncSuccess = useCallback(
+		async (
+			response: Awaited<ReturnType<typeof syncWorkoutMutation.mutateAsync>>,
+		) => {
+			if (response.previous_sets) {
+				for (const ps of response.previous_sets) {
 					await updatePreviousSets(
 						ps.exercise_id,
 						ps.profile_id ?? null,
@@ -101,39 +70,37 @@ export function useSync() {
 					);
 				}
 			}
+		},
+		[],
+	);
 
-			// Clear pending workout
+	const result = useSyncedSave({
+		getPending: getPendingWorkout,
+		saveLocal: async (data: StoredWorkout) => {
+			await setPendingWorkout(data);
+		},
+		clearPending: async () => {
 			await setPendingWorkout(null);
-			await setLastSyncTime(new Date());
+		},
+		toRemote,
+		syncRemote,
+		onSyncSuccess,
+		getLastSyncTime,
+		setLastSyncTime,
+	});
 
-			setState((prev) => ({
-				...prev,
-				isSyncing: false,
-				hasPendingWorkout: false,
-				lastSyncTime: new Date(),
-			}));
-
-			return true;
-		} catch (err) {
-			setState((prev) => ({
-				...prev,
-				isSyncing: false,
-				error: err instanceof Error ? err.message : "Sync failed",
-			}));
-			return false;
-		}
-	}, [isOnline, isAuthenticated]);
-
-	// Auto-sync when coming online
-	useEffect(() => {
-		if (isOnline && isAuthenticated && state.hasPendingWorkout) {
-			forceSync();
-		}
-	}, [isOnline, isAuthenticated, state.hasPendingWorkout, forceSync]);
-
-	return {
-		...state,
-		isOnline,
-		forceSync,
-	};
+	// Map hasPending to hasPendingWorkout for backwards compatibility
+	return useMemo(
+		() => ({
+			isSyncing: result.isSyncing,
+			lastSyncTime: result.lastSyncTime,
+			hasPendingWorkout: result.hasPending,
+			error: result.error,
+			retryCount: result.retryCount,
+			nextRetryAt: result.nextRetryAt,
+			isOnline: result.isOnline,
+			forceSync: result.forceSync,
+		}),
+		[result],
+	);
 }

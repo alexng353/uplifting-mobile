@@ -21,62 +21,31 @@ import {
 	IonToolbar,
 } from "@ionic/react";
 import { personAdd, search } from "ionicons/icons";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import "./Friends.css";
-import { api } from "../../lib/api";
-import type { FeedItem } from "../../lib/api-openapi-gen";
+import { useFeed } from "../../hooks/useFeed";
 import FriendSearch from "./components/FriendSearch";
 
 export default function Friends() {
-	const [feed, setFeed] = useState<FeedItem[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
 	const [showSearch, setShowSearch] = useState(false);
-	const [offset, setOffset] = useState(0);
-	const [hasMore, setHasMore] = useState(true);
+	const { data, isLoading, refetch, fetchNextPage, hasNextPage } = useFeed();
 
-	const loadFeed = useCallback(
-		async (reset = false) => {
-			const newOffset = reset ? 0 : offset;
-			const { data, error } = await api.getFeed({
-				query: { offset: newOffset, limit: 20 },
-			});
-
-			if (error || !data) {
-				setIsLoading(false);
-				return;
-			}
-
-			if (reset) {
-				setFeed(data);
-			} else {
-				setFeed((prev) => [...prev, ...data]);
-			}
-
-			setOffset(newOffset + data.length);
-			setHasMore(data.length === 20);
-			setIsLoading(false);
-		},
-		[offset],
-	);
-
-	useEffect(() => {
-		loadFeed(true);
-	}, [loadFeed]);
+	const feed = data?.pages.flat() ?? [];
 
 	const handleRefresh = useCallback(
 		async (event: CustomEvent) => {
-			await loadFeed(true);
+			await refetch();
 			event.detail.complete();
 		},
-		[loadFeed],
+		[refetch],
 	);
 
 	const handleInfinite = useCallback(
 		async (event: CustomEvent) => {
-			await loadFeed();
+			await fetchNextPage();
 			(event.target as HTMLIonInfiniteScrollElement).complete();
 		},
-		[loadFeed],
+		[fetchNextPage],
 	);
 
 	const formatDuration = (minutes: number | null | undefined): string => {
@@ -162,7 +131,10 @@ export default function Friends() {
 					</div>
 				)}
 
-				<IonInfiniteScroll onIonInfinite={handleInfinite} disabled={!hasMore}>
+				<IonInfiniteScroll
+					onIonInfinite={handleInfinite}
+					disabled={!hasNextPage}
+				>
 					<IonInfiniteScrollContent />
 				</IonInfiniteScroll>
 

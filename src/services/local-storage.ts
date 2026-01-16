@@ -11,6 +11,9 @@ export const STORAGE_KEYS = {
 	PENDING_WORKOUT: "pending_workout",
 } as const;
 
+// Workout kind type
+export type WorkoutKind = "workout" | "rest";
+
 // Types for stored data
 export interface StoredWorkout {
 	id: string;
@@ -19,6 +22,7 @@ export interface StoredWorkout {
 	name?: string;
 	privacy: string;
 	gymLocation?: string;
+	kind: WorkoutKind;
 }
 
 export interface StoredWorkoutExercise {

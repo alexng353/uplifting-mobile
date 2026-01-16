@@ -11,7 +11,10 @@ import {
 import { useCallback, useState } from "react";
 import "./Login.css";
 import { useAuth } from "../../hooks/useAuth";
-import { api } from "../../lib/api";
+import {
+	useLoginMutation,
+	useSignupMutation,
+} from "../../hooks/useAuth.mutations";
 
 export default function Login() {
 	const { login } = useAuth();
@@ -21,37 +24,33 @@ export default function Login() {
 	const [realName, setRealName] = useState("");
 	const [email, setEmail] = useState("");
 
+	const loginMutation = useLoginMutation();
+	const signupMutation = useSignupMutation();
+
 	const title = isRegistering ? "Register" : "Login";
 
 	const handleLogin = useCallback(async () => {
-		const { data, error } = await api.login({
-			body: {
-				username,
-				password,
-			},
-		});
-		if (error || !data) {
+		try {
+			const data = await loginMutation.mutateAsync({ username, password });
+			await login(data);
+		} catch (error) {
 			console.error("Failed to login", error);
-			return;
 		}
-		await login(data);
-	}, [username, password, login]);
+	}, [username, password, login, loginMutation]);
 
 	const handleRegister = useCallback(async () => {
-		const { data, error } = await api.signup({
-			body: {
+		try {
+			const data = await signupMutation.mutateAsync({
 				username,
 				password,
 				real_name: realName,
 				email,
-			},
-		});
-		if (error || !data) {
+			});
+			await login(data);
+		} catch (error) {
 			console.error("Failed to register", error);
-			return;
 		}
-		await login(data);
-	}, [username, password, realName, email, login]);
+	}, [username, password, realName, email, login, signupMutation]);
 
 	const handleClick = useCallback(() => {
 		if (isRegistering) {

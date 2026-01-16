@@ -1,4 +1,5 @@
 import {
+	IonBadge,
 	IonCard,
 	IonCardContent,
 	IonCardHeader,
@@ -14,87 +15,100 @@ import {
 	IonTitle,
 	IonToolbar,
 } from "@ionic/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { WeekStreak, type WorkoutEntry } from "../../components/WeekStreak";
 import "./Stats.css";
-import { api } from "../../lib/api";
-import type { Workout } from "../../lib/api-openapi-gen";
+import { useWithPending } from "../../hooks/useWithPending";
+import { useWorkouts } from "../../hooks/useWorkouts";
+import { getPendingWorkout } from "../../services/local-storage";
 
-interface WeekStats {
-	totalWorkouts: number;
-	totalSets: number;
-	totalVolume: number;
-	totalMinutes: number;
+// Unified workout type for display
+interface DisplayWorkout {
+	id: string;
+	name: string | null | undefined;
+	startTime: string;
+	endTime: string | null | undefined;
+	gymLocation?: string | null;
+	kind: "workout" | "rest";
 }
 
 export default function Stats() {
-	const [workouts, setWorkouts] = useState<Workout[]>([]);
-	const [weekStats, setWeekStats] = useState<WeekStats>({
-		totalWorkouts: 0,
-		totalSets: 0,
-		totalVolume: 0,
-		totalMinutes: 0,
+	const workoutsQuery = useWorkouts(1, 10);
+
+	const {
+		items: workoutItems,
+		isLoading,
+		refresh,
+	} = useWithPending({
+		query: workoutsQuery,
+		getPending: getPendingWorkout,
+		transformLocal: (local): DisplayWorkout => ({
+			id: local.id,
+			name: local.name,
+			startTime: local.startTime,
+			endTime: undefined, // Pending workouts don't have end time yet
+			gymLocation: local.gymLocation,
+			kind: local.kind,
+		}),
+		transformRemote: (remote): DisplayWorkout => ({
+			id: remote.id,
+			name: remote.name,
+			startTime: remote.start_time,
+			endTime: remote.end_time,
+			gymLocation: remote.gym_location,
+			// Handle API response - kind may not be present in old data
+			kind:
+				((remote as { kind?: string }).kind as "workout" | "rest") ?? "workout",
+		}),
+		isDuplicate: (pending, synced) => pending.id === synced.id,
 	});
-	const [isLoading, setIsLoading] = useState(true);
 
-	const loadStats = useCallback(async () => {
-		setIsLoading(true);
+	const weekStats = useMemo(() => {
+		const now = new Date();
+		const dayOfWeek = now.getDay();
+		const startOfWeek = new Date(now);
+		startOfWeek.setDate(now.getDate() - dayOfWeek);
+		startOfWeek.setHours(0, 0, 0, 0);
 
-		// Get recent workouts
-		const { data: workoutData } = await api.listWorkouts({
-			query: { page: 1, per_page: 10 },
+		const thisWeekItems = workoutItems.filter((item) => {
+			const workoutDate = new Date(item.data.startTime);
+			return workoutDate >= startOfWeek;
 		});
 
-		if (workoutData?.workouts) {
-			setWorkouts(workoutData.workouts);
+		// Only count actual workouts, not rest days
+		const actualWorkouts = thisWeekItems.filter(
+			(item) => item.data.kind === "workout",
+		);
 
-			// Calculate this week's stats (Sunday to Saturday)
-			const now = new Date();
-			const dayOfWeek = now.getDay();
-			const startOfWeek = new Date(now);
-			startOfWeek.setDate(now.getDate() - dayOfWeek);
-			startOfWeek.setHours(0, 0, 0, 0);
-
-			let totalWorkouts = 0;
-			let totalMinutes = 0;
-
-			// Get summaries for workouts this week
-			const thisWeekWorkouts = workoutData.workouts.filter((w) => {
-				const workoutDate = new Date(w.start_time);
-				return workoutDate >= startOfWeek;
-			});
-
-			totalWorkouts = thisWeekWorkouts.length;
-
-			// Calculate duration for each
-			for (const w of thisWeekWorkouts) {
-				if (w.start_time && w.end_time) {
-					const start = new Date(w.start_time);
-					const end = new Date(w.end_time);
-					totalMinutes += Math.round((end.getTime() - start.getTime()) / 60000);
-				}
-			}
-
-			setWeekStats({
-				totalWorkouts,
-				totalSets: 0, // Would need to fetch summaries for this
-				totalVolume: 0,
-				totalMinutes,
-			});
+		let totalMinutes = 0;
+		for (const item of actualWorkouts) {
+			const start = new Date(item.data.startTime);
+			// For pending workouts without end time, use now
+			const end = item.data.endTime ? new Date(item.data.endTime) : new Date();
+			totalMinutes += Math.round((end.getTime() - start.getTime()) / 60000);
 		}
 
-		setIsLoading(false);
-	}, []);
+		// Collect entries for the week streak (both workouts and rest days)
+		const entries: WorkoutEntry[] = thisWeekItems.map((item) => ({
+			date: item.data.startTime,
+			kind: item.data.kind,
+		}));
 
-	useEffect(() => {
-		loadStats();
-	}, [loadStats]);
+		return {
+			totalWorkouts: actualWorkouts.length,
+			totalSets: 0,
+			totalVolume: 0,
+			totalMinutes,
+			entries,
+		};
+	}, [workoutItems]);
 
 	const handleRefresh = useCallback(
 		async (event: CustomEvent) => {
-			await loadStats();
+			await refresh();
 			event.detail.complete();
 		},
-		[loadStats],
+		[refresh],
 	);
 
 	const formatDate = (date: string): string => {
@@ -140,6 +154,7 @@ export default function Stats() {
 							<IonCardTitle>This Week</IonCardTitle>
 						</IonCardHeader>
 						<IonCardContent>
+							<WeekStreak entries={weekStats.entries} size="medium" />
 							<div className="week-stats">
 								<div className="stat-item">
 									<span className="stat-value">{weekStats.totalWorkouts}</span>
@@ -157,24 +172,41 @@ export default function Stats() {
 
 					{isLoading ? (
 						<p className="ion-text-center">Loading...</p>
-					) : workouts.length === 0 ? (
+					) : workoutItems.length === 0 ? (
 						<div className="empty-state">
 							<p>No workouts yet</p>
 							<p>Complete your first workout to see stats</p>
 						</div>
 					) : (
 						<IonList>
-							{workouts.map((workout) => (
-								<IonItem key={workout.id} button detail>
-									<IonLabel>
-										<h2>{workout.name || "Workout"}</h2>
-										<p>{formatDate(workout.start_time)}</p>
-									</IonLabel>
-									<span slot="end" className="workout-duration">
-										{formatDuration(workout.start_time, workout.end_time)}
-									</span>
-								</IonItem>
-							))}
+							{workoutItems.map((item) =>
+								item.isPending ? (
+									<IonItem key={item.data.id} className="pending-workout">
+										<IonLabel>
+											<h2>{item.data.name || "Workout"}</h2>
+											<p>{formatDate(item.data.startTime)}</p>
+										</IonLabel>
+										<IonBadge slot="end" color="warning">
+											Syncing...
+										</IonBadge>
+									</IonItem>
+								) : (
+									<IonItem
+										key={item.data.id}
+										button
+										detail
+										routerLink={`/stats/workout/${item.data.id}`}
+									>
+										<IonLabel>
+											<h2>{item.data.name || "Workout"}</h2>
+											<p>{formatDate(item.data.startTime)}</p>
+										</IonLabel>
+										<span slot="end" className="workout-duration">
+											{formatDuration(item.data.startTime, item.data.endTime)}
+										</span>
+									</IonItem>
+								),
+							)}
 						</IonList>
 					)}
 				</div>

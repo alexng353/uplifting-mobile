@@ -23,6 +23,7 @@ interface WorkoutContextValue {
 	workout: StoredWorkout | null;
 	isActive: boolean;
 	startWorkout: () => Promise<void>;
+	logRestDay: () => Promise<StoredWorkout>;
 	addExercise: (
 		exerciseId: string,
 		exerciseName: string,
@@ -99,9 +100,29 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 			startTime: new Date().toISOString(),
 			exercises: [],
 			privacy: settings.defaultPrivacy,
+			kind: "workout",
 		};
 		await saveWorkout(newWorkout);
 	}, [saveWorkout]);
+
+	const logRestDay = useCallback(async (): Promise<StoredWorkout> => {
+		const settings = await getSettings();
+		const now = new Date().toISOString();
+		const restDay: StoredWorkout = {
+			id: generateId(),
+			startTime: now,
+			exercises: [],
+			privacy: settings.defaultPrivacy,
+			kind: "rest",
+			name: "Rest Day",
+		};
+
+		// Rest days go directly to pending (no active workout state)
+		await setPendingWorkout(restDay);
+		setHasPendingWorkout(true);
+
+		return restDay;
+	}, []);
 
 	const addExercise = useCallback(
 		async (exerciseId: string, exerciseName: string, profileId?: string) => {
@@ -261,6 +282,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 				workout,
 				isActive: workout !== null,
 				startWorkout,
+				logRestDay,
 				addExercise,
 				removeExercise,
 				reorderExercises,

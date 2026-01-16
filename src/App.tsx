@@ -10,8 +10,11 @@ import {
 	setupIonicReact,
 } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { barbell, people, person, settings, statsChart } from "ionicons/icons";
 import { Redirect, Route } from "react-router-dom";
+
+const queryClient = new QueryClient();
 
 //#region Ionic CSS
 /* Core CSS required for Ionic components to work properly */
@@ -44,6 +47,7 @@ import Login from "./pages/login/Login";
 import Me from "./pages/me/Me";
 import Settings from "./pages/settings/Settings";
 import Stats from "./pages/stats/Stats";
+import WorkoutDetail from "./pages/stats/WorkoutDetail";
 import Workout from "./pages/workout/Workout";
 
 setupIonicReact();
@@ -63,6 +67,9 @@ function AuthenticatedRouter() {
 				</Route>
 				<Route exact path="/stats">
 					<Stats />
+				</Route>
+				<Route exact path="/stats/workout/:workoutId">
+					<WorkoutDetail />
 				</Route>
 				<Route exact path="/settings">
 					<Settings />
@@ -124,9 +131,11 @@ function AppContent() {
 
 function App() {
 	return (
-		<AuthProvider>
-			<AppContent />
-		</AuthProvider>
+		<QueryClientProvider client={queryClient}>
+			<AuthProvider>
+				<AppContent />
+			</AuthProvider>
+		</QueryClientProvider>
 	);
 }
 

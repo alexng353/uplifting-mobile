@@ -13,8 +13,8 @@ import {
 } from "@ionic/react";
 import { personAdd } from "ionicons/icons";
 import { useCallback, useState } from "react";
-import { api } from "../../../lib/api";
-import type { UserSearchResult } from "../../../lib/api-openapi-gen";
+import { useSearchUsers } from "../../../hooks/useSearchUsers";
+import { useSendFriendRequest } from "../../../hooks/useSendFriendRequest";
 
 interface FriendSearchProps {
 	onClose: () => void;
@@ -22,30 +22,19 @@ interface FriendSearchProps {
 
 export default function FriendSearch({ onClose }: FriendSearchProps) {
 	const [searchText, setSearchText] = useState("");
-	const [results, setResults] = useState<UserSearchResult[]>([]);
-	const [isSearching, setIsSearching] = useState(false);
 	const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
 
-	const handleSearch = useCallback(async (query: string) => {
-		if (!query.trim()) {
-			setResults([]);
-			return;
-		}
+	const { data: results = [], isLoading: isSearching } =
+		useSearchUsers(searchText);
+	const sendFriendRequest = useSendFriendRequest();
 
-		setIsSearching(true);
-		const { data } = await api.searchUsers({ query: { q: query } });
-		if (data) {
-			setResults(data);
-		}
-		setIsSearching(false);
-	}, []);
-
-	const handleSendRequest = useCallback(async (userId: string) => {
-		const { error } = await api.sendRequest({ body: { friend_id: userId } });
-		if (!error) {
+	const handleSendRequest = useCallback(
+		async (userId: string) => {
+			await sendFriendRequest.mutateAsync(userId);
 			setSentRequests((prev) => new Set([...prev, userId]));
-		}
-	}, []);
+		},
+		[sendFriendRequest],
+	);
 
 	return (
 		<>
@@ -60,11 +49,7 @@ export default function FriendSearch({ onClose }: FriendSearchProps) {
 			<IonContent className="ion-padding">
 				<IonSearchbar
 					value={searchText}
-					onIonInput={(e) => {
-						const value = e.detail.value ?? "";
-						setSearchText(value);
-						handleSearch(value);
-					}}
+					onIonInput={(e) => setSearchText(e.detail.value ?? "")}
 					placeholder="Search by username..."
 					debounce={300}
 				/>
