@@ -67,7 +67,7 @@ export default function Login() {
 					<IonTitle>{title}</IonTitle>
 				</IonToolbar>
 			</IonHeader>
-			<IonContent fullscreen>
+			<IonContent>
 				<IonHeader collapse="condense">
 					<IonToolbar>
 						<IonTitle size="large">{title}</IonTitle>

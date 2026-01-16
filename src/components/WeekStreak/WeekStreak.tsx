@@ -86,10 +86,13 @@ function calculateDayStatusesFromEntries(
 			typeof entry.date === "string" ? new Date(entry.date) : entry.date;
 		const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 		const currentStatus = dateStatusMap.get(dateKey);
+		// Normalize kind - default to "workout" if missing/invalid
+		const kind: DayStatus =
+			entry.kind === "rest" ? "rest" : entry.kind === "workout" ? "workout" : "workout";
 
 		// Workout takes precedence over rest
-		if (entry.kind === "workout" || currentStatus !== "workout") {
-			dateStatusMap.set(dateKey, entry.kind);
+		if (kind === "workout" || currentStatus !== "workout") {
+			dateStatusMap.set(dateKey, kind);
 		}
 	}
 

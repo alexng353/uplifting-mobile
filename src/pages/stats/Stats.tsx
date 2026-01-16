@@ -48,7 +48,8 @@ export default function Stats() {
 			startTime: local.startTime,
 			endTime: undefined, // Pending workouts don't have end time yet
 			gymLocation: local.gymLocation,
-			kind: local.kind,
+			// Default to "workout" for old data without kind
+			kind: local.kind ?? "workout",
 		}),
 		transformRemote: (remote): DisplayWorkout => ({
 			id: remote.id,
@@ -56,9 +57,8 @@ export default function Stats() {
 			startTime: remote.start_time,
 			endTime: remote.end_time,
 			gymLocation: remote.gym_location,
-			// Handle API response - kind may not be present in old data
-			kind:
-				((remote as { kind?: string }).kind as "workout" | "rest") ?? "workout",
+			// Default to "workout" for old data without kind
+			kind: remote.kind ?? "workout",
 		}),
 		isDuplicate: (pending, synced) => pending.id === synced.id,
 	});

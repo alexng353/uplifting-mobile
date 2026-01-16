@@ -1,8 +1,9 @@
 import { getAccessToken } from "../services/auth-storage";
 import { client } from "./api-openapi-gen/client.gen";
+import { env } from "./env";
 
 client.setConfig({
-	baseUrl: "http://localhost:8080",
+	baseUrl: env.VITE_API_URL,
 });
 
 client.interceptors.request.use(async (request, _options) => {

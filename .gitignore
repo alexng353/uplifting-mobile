@@ -35,3 +35,8 @@ yarn-error.log*
 
 # api-openapi-gen
 src/lib/api-openapi-gen
+
+# env
+.env
+.env*
+!.env.example
