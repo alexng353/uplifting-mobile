@@ -6,8 +6,26 @@ function boolFlag(args: string[], ...flags: string[]): boolean {
 	return args.some((arg) => flags.includes(arg));
 }
 
-const force = boolFlag(process.argv, "--force", "-f") || !!process.env.VERCEL;
+const force = boolFlag(process.argv, "--force", "-f");
+const isVercel = !!process.env.VERCEL;
 
+// On Vercel, use remote URL directly since the symlink won't resolve
+if (isVercel) {
+	const apiUrl = process.env.VITE_API_URL;
+	if (!apiUrl) {
+		throw new Error("VITE_API_URL is not set");
+	}
+	const remoteUrl = `${apiUrl}/docs/openapi.json`;
+	console.log(`Running on Vercel, using remote openapi.json from ${remoteUrl}`);
+	await createClient({
+		input: remoteUrl,
+		output: "./src/lib/api-openapi-gen",
+		plugins: ["@hey-api/client-fetch"],
+	});
+	process.exit(0);
+}
+
+// Local development: use symlink with caching
 const Z_CacheData = z.object({
 	apiHash: z.string().nullable(),
 	packageJsonHash: z.string().nullable(),
@@ -32,38 +50,7 @@ async function getHash(file: Bun.BunFile) {
 	return hasher.digest("hex");
 }
 
-async function getOpenApiSource(): Promise<string> {
-	const localFile = Bun.file("openapi.json");
-	// Check if symlink resolves to an existing file
-	if (await localFile.exists()) {
-		return "./openapi.json";
-	}
-	// Fallback to remote API
-	const apiUrl = process.env.VITE_API_URL;
-	if (!apiUrl) {
-		throw new Error("Local openapi.json not found and VITE_API_URL is not set");
-	}
-	const remoteUrl = `${apiUrl}/docs/openapi.json`;
-	console.log(`Local openapi.json not found, fetching from ${remoteUrl}`);
-	const response = await fetch(remoteUrl);
-	if (!response.ok) {
-		throw new Error(
-			`Failed to fetch openapi.json from ${remoteUrl}: ${response.statusText}`,
-		);
-	}
-	const content = await response.text();
-	await Bun.write("openapi.json", content);
-	return "./openapi.json";
-}
-
-const openApiSource = await getOpenApiSource();
-
-const apiFile = Bun.file(openApiSource);
-if (!(await apiFile.exists())) {
-	throw new Error(`OpenAPI file not found at ${openApiSource}`);
-}
-
-const apiHash = await getHash(Bun.file(openApiSource));
+const apiHash = await getHash(Bun.file("openapi.json"));
 const packageJsonHash = await getHash(Bun.file("package.json"));
 
 if (
