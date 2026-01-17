@@ -40,7 +40,9 @@ import "@ionic/react/css/palettes/dark.system.css";
 /* Theme variables */
 import "./theme/variables.css";
 
+import { ActivityTracker } from "./components/ActivityTracker";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { WorkoutProvider } from "./hooks/useWorkout";
 /* Pages */
 import Friends from "./pages/friends/Friends";
 import Login from "./pages/login/Login";
@@ -54,54 +56,57 @@ setupIonicReact();
 
 function AuthenticatedRouter() {
 	return (
-		<IonTabs>
-			<IonRouterOutlet>
-				<Route exact path="/me">
-					<Me />
-				</Route>
-				<Route exact path="/friends">
-					<Friends />
-				</Route>
-				<Route exact path="/workout">
-					<Workout />
-				</Route>
-				<Route exact path="/stats">
-					<Stats />
-				</Route>
-				<Route exact path="/stats/workout/:workoutId">
-					<WorkoutDetail />
-				</Route>
-				<Route exact path="/settings">
-					<Settings />
-				</Route>
-				<Route exact path="/">
-					<Redirect to="/me" />
-				</Route>
-				<Redirect exact from="/login" to="/me" />
-			</IonRouterOutlet>
-			<IonTabBar slot="bottom">
-				<IonTabButton tab="me" href="/me">
-					<IonIcon aria-hidden="true" icon={person} />
-					<IonLabel>Me</IonLabel>
-				</IonTabButton>
-				<IonTabButton tab="friends" href="/friends">
-					<IonIcon aria-hidden="true" icon={people} />
-					<IonLabel>Friends</IonLabel>
-				</IonTabButton>
-				<IonTabButton tab="workout" href="/workout">
-					<IonIcon aria-hidden="true" icon={barbell} />
-					<IonLabel>Workout</IonLabel>
-				</IonTabButton>
-				<IonTabButton tab="stats" href="/stats">
-					<IonIcon aria-hidden="true" icon={statsChart} />
-					<IonLabel>Stats</IonLabel>
-				</IonTabButton>
-				<IonTabButton tab="settings" href="/settings">
-					<IonIcon aria-hidden="true" icon={settings} />
-					<IonLabel>Settings</IonLabel>
-				</IonTabButton>
-			</IonTabBar>
-		</IonTabs>
+		<WorkoutProvider>
+			<ActivityTracker />
+			<IonTabs>
+				<IonRouterOutlet>
+					<Route exact path="/me">
+						<Me />
+					</Route>
+					<Route exact path="/friends">
+						<Friends />
+					</Route>
+					<Route exact path="/workout">
+						<Workout />
+					</Route>
+					<Route exact path="/stats">
+						<Stats />
+					</Route>
+					<Route exact path="/stats/workout/:workoutId">
+						<WorkoutDetail />
+					</Route>
+					<Route exact path="/settings">
+						<Settings />
+					</Route>
+					<Route exact path="/">
+						<Redirect to="/me" />
+					</Route>
+					<Redirect exact from="/login" to="/me" />
+				</IonRouterOutlet>
+				<IonTabBar slot="bottom">
+					<IonTabButton tab="me" href="/me">
+						<IonIcon aria-hidden="true" icon={person} />
+						<IonLabel>Me</IonLabel>
+					</IonTabButton>
+					<IonTabButton tab="friends" href="/friends">
+						<IonIcon aria-hidden="true" icon={people} />
+						<IonLabel>Friends</IonLabel>
+					</IonTabButton>
+					<IonTabButton tab="workout" href="/workout">
+						<IonIcon aria-hidden="true" icon={barbell} />
+						<IonLabel>Workout</IonLabel>
+					</IonTabButton>
+					<IonTabButton tab="stats" href="/stats">
+						<IonIcon aria-hidden="true" icon={statsChart} />
+						<IonLabel>Stats</IonLabel>
+					</IonTabButton>
+					<IonTabButton tab="settings" href="/settings">
+						<IonIcon aria-hidden="true" icon={settings} />
+						<IonLabel>Settings</IonLabel>
+					</IonTabButton>
+				</IonTabBar>
+			</IonTabs>
+		</WorkoutProvider>
 	);
 }
 

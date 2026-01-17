@@ -46,6 +46,10 @@ export interface StoredSettings {
 	defaultRestTimerSeconds: number;
 	defaultPrivacy: string;
 	shareGymLocation: boolean;
+	// Sharing settings
+	shareOnlineStatus: boolean;
+	shareWorkoutStatus: boolean;
+	shareWorkoutHistory: boolean;
 }
 
 export interface StoredPreviousSets {
@@ -74,6 +78,9 @@ export const DEFAULT_SETTINGS: StoredSettings = {
 	defaultRestTimerSeconds: 90,
 	defaultPrivacy: "friends",
 	shareGymLocation: true,
+	shareOnlineStatus: true,
+	shareWorkoutStatus: true,
+	shareWorkoutHistory: true,
 };
 
 // Storage operations

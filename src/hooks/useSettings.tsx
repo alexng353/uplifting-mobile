@@ -35,6 +35,9 @@ export function useSettings() {
 			defaultRestTimerSeconds: serverSettings.default_rest_timer_seconds,
 			defaultPrivacy: serverSettings.default_privacy,
 			shareGymLocation: serverSettings.share_gym_location,
+			shareOnlineStatus: serverSettings.share_online_status,
+			shareWorkoutStatus: serverSettings.share_workout_status,
+			shareWorkoutHistory: serverSettings.share_workout_history,
 		};
 		setSettingsState(newSettings);
 		saveSettings(newSettings);

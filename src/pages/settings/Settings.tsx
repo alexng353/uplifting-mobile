@@ -21,14 +21,22 @@ import {
 	IonToggle,
 	IonToolbar,
 } from "@ionic/react";
-import { lockClosed, logOut, mail, pencil, personCircle, trash } from "ionicons/icons";
+import {
+	eye,
+	lockClosed,
+	logOut,
+	mail,
+	pencil,
+	personCircle,
+	trash,
+} from "ionicons/icons";
 import { useCallback, useState } from "react";
 import "./Settings.css";
 import { useAuth } from "../../hooks/useAuth";
 import { useMe } from "../../hooks/useMe";
 import { useSettings } from "../../hooks/useSettings";
-import { clearAllData } from "../../services/local-storage";
 import { api } from "../../lib/api";
+import { clearAllData } from "../../services/local-storage";
 
 export default function Settings() {
 	const { logout, isAuthenticated } = useAuth();
@@ -43,7 +51,9 @@ export default function Settings() {
 	// Email verification state
 	const [showVerifyEmail, setShowVerifyEmail] = useState(false);
 	const [verificationCode, setVerificationCode] = useState("");
-	const [verificationStep, setVerificationStep] = useState<"request" | "verify">("request");
+	const [verificationStep, setVerificationStep] = useState<
+		"request" | "verify"
+	>("request");
 	const [isVerifying, setIsVerifying] = useState(false);
 
 	// Password change state
@@ -51,7 +61,9 @@ export default function Settings() {
 	const [passwordCode, setPasswordCode] = useState("");
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
-	const [passwordStep, setPasswordStep] = useState<"request" | "change">("request");
+	const [passwordStep, setPasswordStep] = useState<"request" | "change">(
+		"request",
+	);
 	const [isChangingPassword, setIsChangingPassword] = useState(false);
 
 	// Toast state
@@ -120,7 +132,9 @@ export default function Settings() {
 		if (!verificationCode.trim()) return;
 		setIsVerifying(true);
 		try {
-			const { error } = await api.verifyEmail({ body: { code: verificationCode.trim() } });
+			const { error } = await api.verifyEmail({
+				body: { code: verificationCode.trim() },
+			});
 			if (error) throw error;
 			await refetchUser();
 			setShowVerifyEmail(false);
@@ -149,14 +163,17 @@ export default function Settings() {
 			setPasswordStep("change");
 			showMessage("Verification code sent to your email");
 		} catch {
-			showMessage("Failed to send verification code. Please verify your email first.");
+			showMessage(
+				"Failed to send verification code. Please verify your email first.",
+			);
 		} finally {
 			setIsChangingPassword(false);
 		}
 	}, [showMessage]);
 
 	const handleChangePassword = useCallback(async () => {
-		if (!passwordCode.trim() || !newPassword || newPassword !== confirmPassword) return;
+		if (!passwordCode.trim() || !newPassword || newPassword !== confirmPassword)
+			return;
 		setIsChangingPassword(true);
 		try {
 			const { error } = await api.changePassword({
@@ -305,6 +322,52 @@ export default function Settings() {
 				</IonList>
 
 				<IonList inset>
+					<IonListHeader>
+						<IonIcon icon={eye} slot="start" style={{ marginRight: 8 }} />
+						Sharing
+					</IonListHeader>
+
+					<IonItem>
+						<IonLabel>
+							<h3>Show Online Status</h3>
+							<p>Let friends see when you're active in the app</p>
+						</IonLabel>
+						<IonToggle
+							checked={settings.shareOnlineStatus}
+							onIonChange={(e) =>
+								updateSettings({ shareOnlineStatus: e.detail.checked })
+							}
+						/>
+					</IonItem>
+
+					<IonItem>
+						<IonLabel>
+							<h3>Show Workout Status</h3>
+							<p>Let friends see when you're working out</p>
+						</IonLabel>
+						<IonToggle
+							checked={settings.shareWorkoutStatus}
+							onIonChange={(e) =>
+								updateSettings({ shareWorkoutStatus: e.detail.checked })
+							}
+						/>
+					</IonItem>
+
+					<IonItem>
+						<IonLabel>
+							<h3>Share Workout History</h3>
+							<p>Let friends view your past workouts</p>
+						</IonLabel>
+						<IonToggle
+							checked={settings.shareWorkoutHistory}
+							onIonChange={(e) =>
+								updateSettings({ shareWorkoutHistory: e.detail.checked })
+							}
+						/>
+					</IonItem>
+				</IonList>
+
+				<IonList inset>
 					<IonListHeader>Account</IonListHeader>
 
 					<IonItem button onClick={handleLogout} detail={false}>
@@ -318,12 +381,17 @@ export default function Settings() {
 					</IonItem>
 				</IonList>
 
-				<IonModal isOpen={showEditUsername} onDidDismiss={() => setShowEditUsername(false)}>
+				<IonModal
+					isOpen={showEditUsername}
+					onDidDismiss={() => setShowEditUsername(false)}
+				>
 					<IonHeader>
 						<IonToolbar>
 							<IonTitle>Change Username</IonTitle>
 							<IonButtons slot="end">
-								<IonButton onClick={() => setShowEditUsername(false)}>Cancel</IonButton>
+								<IonButton onClick={() => setShowEditUsername(false)}>
+									Cancel
+								</IonButton>
 							</IonButtons>
 						</IonToolbar>
 					</IonHeader>
@@ -365,12 +433,17 @@ export default function Settings() {
 					]}
 				/>
 
-				<IonModal isOpen={showVerifyEmail} onDidDismiss={() => setShowVerifyEmail(false)}>
+				<IonModal
+					isOpen={showVerifyEmail}
+					onDidDismiss={() => setShowVerifyEmail(false)}
+				>
 					<IonHeader>
 						<IonToolbar>
 							<IonTitle>Verify Email</IonTitle>
 							<IonButtons slot="end">
-								<IonButton onClick={() => setShowVerifyEmail(false)}>Cancel</IonButton>
+								<IonButton onClick={() => setShowVerifyEmail(false)}>
+									Cancel
+								</IonButton>
 							</IonButtons>
 						</IonToolbar>
 					</IonHeader>
@@ -422,12 +495,17 @@ export default function Settings() {
 					</IonContent>
 				</IonModal>
 
-				<IonModal isOpen={showChangePassword} onDidDismiss={() => setShowChangePassword(false)}>
+				<IonModal
+					isOpen={showChangePassword}
+					onDidDismiss={() => setShowChangePassword(false)}
+				>
 					<IonHeader>
 						<IonToolbar>
 							<IonTitle>Change Password</IonTitle>
 							<IonButtons slot="end">
-								<IonButton onClick={() => setShowChangePassword(false)}>Cancel</IonButton>
+								<IonButton onClick={() => setShowChangePassword(false)}>
+									Cancel
+								</IonButton>
 							</IonButtons>
 						</IonToolbar>
 					</IonHeader>
@@ -435,7 +513,10 @@ export default function Settings() {
 						{passwordStep === "request" ? (
 							<>
 								<IonText>
-									<p>We'll send a verification code to your email to confirm the password change.</p>
+									<p>
+										We'll send a verification code to your email to confirm the
+										password change.
+									</p>
 								</IonText>
 								<IonButton
 									expand="block"
@@ -473,11 +554,13 @@ export default function Settings() {
 									onIonInput={(e) => setConfirmPassword(e.detail.value ?? "")}
 									type="password"
 								/>
-								{newPassword && confirmPassword && newPassword !== confirmPassword && (
-									<IonText color="danger">
-										<p>Passwords do not match</p>
-									</IonText>
-								)}
+								{newPassword &&
+									confirmPassword &&
+									newPassword !== confirmPassword && (
+										<IonText color="danger">
+											<p>Passwords do not match</p>
+										</IonText>
+									)}
 								<IonButton
 									expand="block"
 									onClick={handleChangePassword}

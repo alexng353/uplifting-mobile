@@ -20,7 +20,7 @@ interface PendingRequestsProps {
 }
 
 export default function PendingRequests({ onClose }: PendingRequestsProps) {
-	const { data: requests = [], isLoading, refetch } = usePendingFriendRequests();
+	const { data: requests = [], isLoading } = usePendingFriendRequests();
 	const respondMutation = useRespondFriendRequest();
 
 	const handleAccept = async (friendshipId: string) => {

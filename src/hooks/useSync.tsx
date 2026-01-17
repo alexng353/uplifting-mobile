@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from "react";
+import type { SyncWorkoutRequest } from "../lib/api-openapi-gen/types.gen";
 import {
 	getLastSyncTime,
 	getPendingWorkout,
+	type StoredWorkout,
 	setLastSyncTime,
 	setPendingWorkout,
-	type StoredWorkout,
 	updatePreviousSets,
 } from "../services/local-storage";
-import type { SyncWorkoutRequest } from "../lib/api-openapi-gen/types.gen";
 import { useSyncedSave } from "./useSyncedSave";
 import { useSyncWorkout } from "./useSyncWorkout";
 

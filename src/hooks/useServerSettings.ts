@@ -28,6 +28,9 @@ export function useUpdateSettings() {
 					default_rest_timer_seconds: settings.defaultRestTimerSeconds,
 					default_privacy: settings.defaultPrivacy,
 					share_gym_location: settings.shareGymLocation,
+					share_online_status: settings.shareOnlineStatus,
+					share_workout_status: settings.shareWorkoutStatus,
+					share_workout_history: settings.shareWorkoutHistory,
 				},
 			});
 			if (error) {

@@ -19,7 +19,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "./Workout.css";
 import { useSync } from "../../hooks/useSync";
-import { useWorkout, WorkoutProvider } from "../../hooks/useWorkout";
+import { useWorkout } from "../../hooks/useWorkout";
 import AddExerciseSlide from "./components/AddExerciseSlide";
 import ExerciseSlide from "./components/ExerciseSlide";
 import ReorderModal from "./components/ReorderModal";
@@ -184,9 +184,5 @@ function WorkoutContent() {
 }
 
 export default function Workout() {
-	return (
-		<WorkoutProvider>
-			<WorkoutContent />
-		</WorkoutProvider>
-	);
+	return <WorkoutContent />;
 }

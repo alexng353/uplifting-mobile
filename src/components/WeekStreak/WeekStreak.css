@@ -20,7 +20,9 @@
 
 .week-streak__dot {
 	border-radius: 50%;
-	transition: background-color 0.2s ease, transform 0.2s ease;
+	transition:
+		background-color 0.2s ease,
+		transform 0.2s ease;
 }
 
 /* Status colors */
@@ -38,7 +40,8 @@
 
 /* Today indicator */
 .week-streak__dot--today {
-	box-shadow: 0 0 0 2px var(--ion-background-color),
+	box-shadow:
+		0 0 0 2px var(--ion-background-color),
 		0 0 0 4px var(--ion-color-primary);
 }
 

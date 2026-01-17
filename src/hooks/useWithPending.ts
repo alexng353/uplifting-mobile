@@ -166,7 +166,8 @@ export function useWithPending<TRemote, TLocal, TUnified>(
 	// Filter out duplicates if isDuplicate is provided
 	const filteredPending = isDuplicate
 		? pendingItems.filter(
-				(pending) => !syncedItems.some((synced) => isDuplicate(pending, synced)),
+				(pending) =>
+					!syncedItems.some((synced) => isDuplicate(pending, synced)),
 			)
 		: pendingItems;
 

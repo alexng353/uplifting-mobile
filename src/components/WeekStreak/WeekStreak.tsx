@@ -88,7 +88,11 @@ function calculateDayStatusesFromEntries(
 		const currentStatus = dateStatusMap.get(dateKey);
 		// Normalize kind - default to "workout" if missing/invalid
 		const kind: DayStatus =
-			entry.kind === "rest" ? "rest" : entry.kind === "workout" ? "workout" : "workout";
+			entry.kind === "rest"
+				? "rest"
+				: entry.kind === "workout"
+					? "workout"
+					: "workout";
 
 		// Workout takes precedence over rest
 		if (kind === "workout" || currentStatus !== "workout") {
