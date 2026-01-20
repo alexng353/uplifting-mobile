@@ -1,12 +1,31 @@
 /// <reference types="vitest" />
 
+import { execSync } from "node:child_process";
 import legacy from "@vitejs/plugin-legacy";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
+// Get git commit hash (works locally and on Vercel)
+const getCommitHash = (): string => {
+	// Vercel provides this env var
+	if (process.env.VERCEL_GIT_COMMIT_SHA) {
+		return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
+	}
+	// Fallback for local dev
+	try {
+		return execSync("git rev-parse --short HEAD").toString().trim();
+	} catch {
+		return "dev";
+	}
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
+	define: {
+		__COMMIT_HASH__: JSON.stringify(getCommitHash()),
+		__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+	},
 	plugins: [
 		react(),
 		legacy(),

@@ -381,6 +381,35 @@ export default function Settings() {
 					</IonItem>
 				</IonList>
 
+				<IonList inset>
+					<IonListHeader>Build Info</IonListHeader>
+
+					<IonItem>
+						<IonLabel>
+							<p>Commit</p>
+						</IonLabel>
+						<IonText slot="end" color="medium">
+							{__COMMIT_HASH__}
+						</IonText>
+					</IonItem>
+
+					<IonItem>
+						<IonLabel>
+							<p>Built</p>
+						</IonLabel>
+						<IonText slot="end" color="medium">
+							{new Date(__BUILD_TIME__).toLocaleString(undefined, {
+								month: "numeric",
+								day: "numeric",
+								year: "numeric",
+								hour: "2-digit",
+								minute: "2-digit",
+								hour12: false,
+							})}
+						</IonText>
+					</IonItem>
+				</IonList>
+
 				<IonModal
 					isOpen={showEditUsername}
 					onDidDismiss={() => setShowEditUsername(false)}
