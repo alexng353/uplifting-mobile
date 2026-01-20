@@ -36,7 +36,9 @@ export default function WorkoutSummary({
 		0,
 	);
 	const totalVolume = workout.exercises.reduce(
-		(sum, ex) => sum + ex.sets.reduce((s, set) => s + set.reps * set.weight, 0),
+		(sum, ex) =>
+			sum +
+			ex.sets.reduce((s, set) => s + (set.reps ?? 0) * (set.weight ?? 0), 0),
 		0,
 	);
 	const duration = Math.round(
@@ -103,7 +105,9 @@ export default function WorkoutSummary({
 								</div>
 								<div className="summary-exercise-sets">
 									{exercise.sets.length} sets •{" "}
-									{exercise.sets.map((s) => `${s.reps}×${s.weight}`).join(", ")}
+									{exercise.sets
+										.map((s) => `${s.reps ?? 0}×${s.weight ?? 0}`)
+										.join(", ")}
 								</div>
 							</div>
 						))}

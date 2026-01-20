@@ -40,10 +40,11 @@ export function useSync() {
 				exercise_id: e.exerciseId,
 				profile_id: e.profileId,
 				sets: e.sets.map((s) => ({
-					reps: s.reps,
-					weight: String(s.weight),
+					reps: s.reps ?? 0,
+					weight: String(s.weight ?? 0),
 					weight_unit: s.weightUnit,
 					created_at: s.createdAt,
+					side: s.side,
 				})),
 			})),
 		}),
@@ -66,6 +67,7 @@ export function useSync() {
 							weight: Number(s.weight),
 							weightUnit: s.weight_unit,
 							createdAt: new Date().toISOString(),
+							side: s.side as "L" | "R" | undefined,
 						})),
 					);
 				}
