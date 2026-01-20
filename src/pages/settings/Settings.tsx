@@ -28,6 +28,7 @@ import {
 	mail,
 	pencil,
 	personCircle,
+	refreshCircle,
 	trash,
 } from "ionicons/icons";
 import { useCallback, useState } from "react";
@@ -407,6 +408,28 @@ export default function Settings() {
 								hour12: false,
 							})}
 						</IonText>
+					</IonItem>
+
+					<IonItem
+						button
+						onClick={async () => {
+							// Force service worker update check and reload
+							if ("serviceWorker" in navigator) {
+								const registrations =
+									await navigator.serviceWorker.getRegistrations();
+								for (const registration of registrations) {
+									await registration.update();
+									if (registration.waiting) {
+										registration.waiting.postMessage({ type: "SKIP_WAITING" });
+									}
+								}
+							}
+							window.location.reload();
+						}}
+						detail={false}
+					>
+						<IonIcon slot="start" icon={refreshCircle} color="primary" />
+						<IonLabel color="primary">Check for Updates</IonLabel>
 					</IonItem>
 				</IonList>
 

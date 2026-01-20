@@ -122,18 +122,25 @@
 	color: var(--ion-color-secondary);
 }
 
-/* Remove outlines/borders from inputs in set rows */
+/* Input styling in set rows */
 .set-row ion-input {
 	--border-width: 0;
-	--highlight-color-focused: transparent;
 	--highlight-color-valid: transparent;
 	--highlight-color-invalid: transparent;
 	--background: transparent;
+	--highlight-color-focused: var(--ion-color-primary);
+	border-bottom: 1px solid transparent;
+	transition: border-color 0.15s ease;
+}
+
+.set-row ion-input.has-focus {
+	border-bottom-color: var(--ion-color-primary);
 }
 
 .set-row ion-input::part(native) {
 	border: none;
 	outline: none;
+	caret-color: var(--ion-color-primary);
 }
 
 .set-number {

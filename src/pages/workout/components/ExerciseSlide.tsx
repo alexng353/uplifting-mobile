@@ -53,6 +53,7 @@ function SetRow({
 			)}
 			<IonInput
 				type="number"
+				inputMode="decimal"
 				value={set.reps}
 				placeholder={String(DEFAULT_REPS)}
 				onIonChange={(e) =>
@@ -63,6 +64,7 @@ function SetRow({
 			/>
 			<IonInput
 				type="number"
+				inputMode="decimal"
 				value={set.weight}
 				placeholder={String(DEFAULT_WEIGHT)}
 				onIonChange={(e) =>
@@ -97,6 +99,7 @@ function LeftSetRow({
 			<div className="side-label left">L</div>
 			<IonInput
 				type="number"
+				inputMode="decimal"
 				value={set.reps}
 				placeholder={String(DEFAULT_REPS)}
 				onIonChange={(e) =>
@@ -107,6 +110,7 @@ function LeftSetRow({
 			/>
 			<IonInput
 				type="number"
+				inputMode="decimal"
 				value={set.weight}
 				placeholder={String(DEFAULT_WEIGHT)}
 				onIonChange={(e) =>
