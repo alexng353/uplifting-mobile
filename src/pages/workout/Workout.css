@@ -51,14 +51,23 @@
 	font-size: 0.875rem;
 }
 
+.exercise-slide-controls {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-top: 0.5rem;
+}
+
 .sets-container {
 	flex: 1;
 	overflow-y: auto;
+	padding-bottom: 160px; /* Space for timer + action buttons */
 }
 
+/* Normal mode: set | reps | weight | unit */
 .set-row {
 	display: grid;
-	grid-template-columns: 40px 1fr 1fr 1fr 40px;
+	grid-template-columns: 40px 1fr 1fr 50px;
 	gap: 0.5rem;
 	align-items: center;
 	padding: 0.5rem 0;
@@ -70,6 +79,61 @@
 	font-size: 0.75rem;
 	color: var(--ion-color-medium);
 	text-transform: uppercase;
+	position: sticky;
+	top: 0;
+	background: var(--ion-background-color);
+	z-index: 10;
+}
+
+/* Unilateral mode: set | side | reps | weight | unit */
+.set-row.unilateral-header {
+	grid-template-columns: 40px 40px 1fr 1fr 50px;
+}
+
+.set-row.unilateral-row {
+	grid-template-columns: 40px 40px 1fr 1fr 50px;
+}
+
+.unilateral-group {
+	border-bottom: 1px solid var(--ion-color-light);
+	padding-bottom: 0.25rem;
+	margin-bottom: 0.25rem;
+}
+
+.unilateral-group .set-row {
+	border-bottom: none;
+}
+
+.unilateral-group .left-row {
+	padding-top: 0;
+}
+
+.side-label {
+	font-weight: 700;
+	font-size: 0.875rem;
+	text-align: center;
+}
+
+.side-label.right {
+	color: var(--ion-color-primary);
+}
+
+.side-label.left {
+	color: var(--ion-color-secondary);
+}
+
+/* Remove outlines/borders from inputs in set rows */
+.set-row ion-input {
+	--border-width: 0;
+	--highlight-color-focused: transparent;
+	--highlight-color-valid: transparent;
+	--highlight-color-invalid: transparent;
+	--background: transparent;
+}
+
+.set-row ion-input::part(native) {
+	border: none;
+	outline: none;
 }
 
 .set-number {
@@ -77,24 +141,99 @@
 	font-weight: 600;
 }
 
-.previous-hint {
-	color: var(--ion-color-medium);
+.unit-label {
 	font-size: 0.75rem;
+	color: var(--ion-color-medium);
+	text-align: center;
 }
 
-/* Add set button pinned to bottom */
-.add-set-button-container {
+/* Set action buttons (add/duplicate/remove) pinned to bottom */
+.set-actions-container {
 	position: fixed;
-	bottom: 70px; /* Above tab bar */
+	bottom: 50px; /* Above tab bar */
 	left: 50%;
 	transform: translateX(-50%);
 	z-index: 100;
+	display: flex;
+	gap: 0.75rem;
 }
 
-.add-set-button {
-	width: fit-content;
-	--padding-start: 2rem;
-	--padding-end: 2rem;
+.set-action-button {
+	--padding-start: 1rem;
+	--padding-end: 1rem;
+	--border-width: 2px;
+	--border-radius: 6px;
+	--background: #000;
+}
+
+.set-action-button ion-icon {
+	font-size: 1.5rem;
+}
+
+/* Rest Timer */
+.rest-timer-container {
+	position: fixed;
+	bottom: 108px; /* Above action buttons */
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	background: var(--ion-background-color);
+	padding: 0.5rem 1rem;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.rest-timer-display {
+	font-family: "SF Mono", "Menlo", "Monaco", monospace;
+	font-size: 1.5rem;
+	font-weight: 600;
+	min-width: 80px;
+	text-align: center;
+	color: var(--ion-text-color);
+}
+
+.rest-timer-button {
+	--padding-start: 0.75rem;
+	--padding-end: 0.75rem;
+	--border-radius: 6px;
+	margin: 0;
+}
+
+.rest-timer-button ion-icon {
+	font-size: 1.25rem;
+}
+
+/* Add button - blue outline */
+.set-action-button.add-button {
+	--color: var(--ion-color-primary);
+	--border-color: var(--ion-color-primary);
+	--background-activated: var(
+		--ion-color-primary-tint,
+		rgba(56, 128, 255, 0.2)
+	);
+	--color-activated: var(--ion-color-primary);
+}
+
+/* Duplicate button - green outline */
+.set-action-button.duplicate-button {
+	--color: var(--ion-color-success);
+	--border-color: var(--ion-color-success);
+	--background-activated: var(
+		--ion-color-success-tint,
+		rgba(45, 211, 111, 0.2)
+	);
+	--color-activated: var(--ion-color-success);
+}
+
+/* Remove button - red outline */
+.set-action-button.remove-button {
+	--color: var(--ion-color-danger);
+	--border-color: var(--ion-color-danger);
+	--background-activated: var(--ion-color-danger-tint, rgba(235, 68, 90, 0.2));
+	--color-activated: var(--ion-color-danger);
 }
 
 .add-exercise-slide {
@@ -183,27 +322,6 @@
 .workout-swiper .swiper-pagination-bullet-active {
 	background: var(--ion-color-primary);
 	opacity: 1;
-}
-
-/* Fill from previous button */
-.fill-button {
-	--padding-start: 4px;
-	--padding-end: 4px;
-	font-size: 0.7rem;
-	height: auto;
-	margin: 0;
-}
-
-.fill-button ion-icon {
-	font-size: 0.75rem;
-	margin-right: 2px;
-}
-
-/* Remove set button in row */
-.set-row ion-button[color="danger"] {
-	--padding-start: 4px;
-	--padding-end: 4px;
-	margin: 0;
 }
 
 /* Exercise meta row (type + profiles) */

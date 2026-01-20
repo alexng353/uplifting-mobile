@@ -28,7 +28,6 @@ export default function Me() {
 						<IonTitle size="large">Me</IonTitle>
 					</IonToolbar>
 				</IonHeader>
-				Nothing to see here yet.
 				{/* Sync Banner */}
 				{(!isOnline || hasPendingWorkout) && (
 					<div className={`sync-banner ${isOnline ? "pending" : "offline"}`}>
@@ -50,6 +49,10 @@ export default function Me() {
 					</div>
 				)}
 				<div className="me-content">
+					<p>
+						Update: Added a set timer. Press button briefly to start/stop timer.
+						Hold to reset.
+					</p>
 					{lastSyncTime && (
 						<p className="last-sync-time">
 							Last synced: {lastSyncTime.toLocaleString()}

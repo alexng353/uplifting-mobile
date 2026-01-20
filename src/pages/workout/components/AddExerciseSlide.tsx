@@ -10,7 +10,7 @@ import {
 	IonSpinner,
 } from "@ionic/react";
 import { add, star, starOutline } from "ionicons/icons";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
 	useAllExerciseProfiles,
 	useCreateExerciseProfile,
@@ -38,6 +38,7 @@ export default function AddExerciseSlide({
 	);
 	const [showProfileSheet, setShowProfileSheet] = useState(false);
 	const [showNewProfileAlert, setShowNewProfileAlert] = useState(false);
+	const transitioningToAlertRef = useRef(false);
 
 	const { data: exercises, isLoading } = useExercises(searchText);
 	const { data: allProfiles } = useAllExerciseProfiles();
@@ -83,6 +84,7 @@ export default function AddExerciseSlide({
 			addExercise(selectedExercise.id, displayName, profileId);
 			setShowProfileSheet(false);
 			setSelectedExercise(null);
+			setSearchText(""); // Clear search when exercise is added
 			onExerciseAdded();
 		},
 		[selectedExercise, addExercise, onExerciseAdded],
@@ -110,6 +112,7 @@ export default function AddExerciseSlide({
 			{
 				text: "Create new profile...",
 				handler: () => {
+					transitioningToAlertRef.current = true;
 					setShowProfileSheet(false);
 					setShowNewProfileAlert(true);
 				},
@@ -246,7 +249,12 @@ export default function AddExerciseSlide({
 				isOpen={showProfileSheet}
 				onDidDismiss={() => {
 					setShowProfileSheet(false);
-					setSelectedExercise(null);
+					// Only clear selectedExercise if we're not transitioning to the new profile alert
+					if (transitioningToAlertRef.current) {
+						transitioningToAlertRef.current = false;
+					} else {
+						setSelectedExercise(null);
+					}
 				}}
 				header={`Add ${selectedExercise?.name ?? "Exercise"}`}
 				subHeader="Select a profile or use default"

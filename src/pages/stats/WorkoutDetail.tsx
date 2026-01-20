@@ -104,7 +104,7 @@ export default function WorkoutDetail() {
 					sets: [],
 				});
 			}
-			groups.get(key)!.sets.push(set);
+			groups.get(key)?.sets.push(set);
 		}
 
 		return Array.from(groups.values());

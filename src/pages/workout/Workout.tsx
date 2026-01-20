@@ -59,9 +59,11 @@ function WorkoutContent() {
 	}, []);
 
 	const handleExerciseAdded = useCallback(() => {
-		// Slide to the newly added exercise (second to last slide)
+		// Slide to the newly added exercise
+		// Note: workout.exercises.length is the OLD count (before add)
+		// so the new exercise will be at index = length
 		if (swiperRef.current && workout) {
-			swiperRef.current.slideTo(workout.exercises.length - 1);
+			swiperRef.current.slideTo(workout.exercises.length);
 		}
 	}, [workout]);
 

@@ -1,88 +1,351 @@
-import { IonButton, IonIcon, IonInput, IonList } from "@ionic/react";
-import { add, arrowDown, close } from "ionicons/icons";
-import { useCallback, useEffect, useState } from "react";
+import { IonButton, IonIcon, IonInput, IonList, IonToggle } from "@ionic/react";
+import { add, close, syncOutline } from "ionicons/icons";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useSettings } from "../../../hooks/useSettings";
 import { useWorkout } from "../../../hooks/useWorkout";
 import type {
 	StoredSet,
 	StoredWorkoutExercise,
 } from "../../../services/local-storage";
-import { getPreviousSets } from "../../../services/local-storage";
+import RestTimer from "./RestTimer";
 
 interface ExerciseSlideProps {
 	exercise: StoredWorkoutExercise;
 }
 
+interface SetPair {
+	setNumber: number;
+	rightSet?: StoredSet;
+	leftSet?: StoredSet;
+}
+
+const DEFAULT_REPS = 10;
+const DEFAULT_WEIGHT = 20;
+
+function SetRow({
+	set,
+	setNumber,
+	sideLabel,
+	exerciseId,
+	displayUnit,
+	updateSet,
+}: {
+	set: StoredSet;
+	setNumber: number;
+	sideLabel?: "R" | "L";
+	exerciseId: string;
+	displayUnit: string;
+	updateSet: (
+		exerciseId: string,
+		setId: string,
+		updates: Partial<StoredSet>,
+	) => void;
+}) {
+	const isUnilateral = !!sideLabel;
+
+	return (
+		<div className={`set-row ${isUnilateral ? "unilateral-row" : ""}`}>
+			<div className="set-number">{setNumber}</div>
+			{isUnilateral && (
+				<div className={`side-label ${sideLabel === "R" ? "right" : "left"}`}>
+					{sideLabel}
+				</div>
+			)}
+			<IonInput
+				type="number"
+				value={set.reps}
+				placeholder={String(DEFAULT_REPS)}
+				onIonChange={(e) =>
+					updateSet(exerciseId, set.id, {
+						reps: e.detail.value ? Number(e.detail.value) : undefined,
+					})
+				}
+			/>
+			<IonInput
+				type="number"
+				value={set.weight}
+				placeholder={String(DEFAULT_WEIGHT)}
+				onIonChange={(e) =>
+					updateSet(exerciseId, set.id, {
+						weight: e.detail.value ? Number(e.detail.value) : undefined,
+					})
+				}
+			/>
+			<div className="unit-label">{displayUnit}</div>
+		</div>
+	);
+}
+
+function LeftSetRow({
+	set,
+	exerciseId,
+	displayUnit,
+	updateSet,
+}: {
+	set: StoredSet;
+	exerciseId: string;
+	displayUnit: string;
+	updateSet: (
+		exerciseId: string,
+		setId: string,
+		updates: Partial<StoredSet>,
+	) => void;
+}) {
+	return (
+		<div className="set-row unilateral-row left-row">
+			<div className="set-number" />
+			<div className="side-label left">L</div>
+			<IonInput
+				type="number"
+				value={set.reps}
+				placeholder={String(DEFAULT_REPS)}
+				onIonChange={(e) =>
+					updateSet(exerciseId, set.id, {
+						reps: e.detail.value ? Number(e.detail.value) : undefined,
+					})
+				}
+			/>
+			<IonInput
+				type="number"
+				value={set.weight}
+				placeholder={String(DEFAULT_WEIGHT)}
+				onIonChange={(e) =>
+					updateSet(exerciseId, set.id, {
+						weight: e.detail.value ? Number(e.detail.value) : undefined,
+					})
+				}
+			/>
+			<div className="unit-label">{displayUnit}</div>
+		</div>
+	);
+}
+
 export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
-	const { addSet, removeSet, updateSet } = useWorkout();
-	const { getDisplayUnit, formatWeight } = useSettings();
-	const [previousSets, setPreviousSets] = useState<StoredSet[]>([]);
-	const [newReps, setNewReps] = useState<number | undefined>();
-	const [newWeight, setNewWeight] = useState<number | undefined>();
+	const {
+		addSet,
+		addUnilateralPair,
+		updateSet,
+		toggleUnilateral,
+		removeLastSet,
+		removeLastUnilateralPair,
+	} = useWorkout();
+	const { getDisplayUnit } = useSettings();
+	const setsContainerRef = useRef<HTMLDivElement>(null);
 
+	const displayUnit = getDisplayUnit();
+
+	// Auto-scroll to bottom when sets change
+	const setsLength = exercise.sets.length;
 	useEffect(() => {
-		const key = `${exercise.exerciseId}_${exercise.profileId ?? "default"}`;
-		getPreviousSets().then((data) => {
-			setPreviousSets(data[key] ?? []);
-		});
-	}, [exercise.exerciseId, exercise.profileId]);
+		if (setsLength > 0 && setsContainerRef.current) {
+			// Wait for DOM to update before scrolling
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					if (setsContainerRef.current) {
+						setsContainerRef.current.scrollTo({
+							top: setsContainerRef.current.scrollHeight,
+							behavior: "smooth",
+						});
+					}
+				});
+			});
+		}
+	}, [setsLength]);
 
+	// Group sets into pairs for unilateral mode
+	const setGroups = useMemo((): SetPair[] => {
+		if (!exercise.isUnilateral) {
+			return exercise.sets.map((set, index) => ({
+				setNumber: index + 1,
+				rightSet: set,
+			}));
+		}
+
+		const pairs: SetPair[] = [];
+		const rightSets = exercise.sets.filter((s) => s.side === "R");
+		const leftSets = exercise.sets.filter((s) => s.side === "L");
+		const maxLen = Math.max(rightSets.length, leftSets.length);
+
+		for (let i = 0; i < maxLen; i++) {
+			pairs.push({
+				setNumber: i + 1,
+				rightSet: rightSets[i],
+				leftSet: leftSets[i],
+			});
+		}
+
+		return pairs;
+	}, [exercise.sets, exercise.isUnilateral]);
+
+	// Get the last set's values for duplicating
+	const lastSet = exercise.sets[exercise.sets.length - 1];
+	const lastRightSet = exercise.isUnilateral
+		? exercise.sets.filter((s) => s.side === "R").slice(-1)[0]
+		: null;
+
+	// Add set without values (first set) - leave empty with placeholders
 	const handleAddSet = useCallback(() => {
-		const reps = newReps ?? previousSets[exercise.sets.length]?.reps ?? 10;
-		const weight =
-			newWeight ?? previousSets[exercise.sets.length]?.weight ?? 20;
-		const unit = getDisplayUnit();
+		addSet(exercise.exerciseId, displayUnit);
+	}, [exercise.exerciseId, addSet, displayUnit]);
 
-		addSet(exercise.exerciseId, reps, weight, unit);
-		setNewReps(undefined);
-		setNewWeight(undefined);
+	const handleAddUnilateralPair = useCallback(() => {
+		addUnilateralPair(exercise.exerciseId, displayUnit);
+	}, [exercise.exerciseId, addUnilateralPair, displayUnit]);
+
+	// Duplicate last set with its values
+	const handleDuplicateLastSet = useCallback(() => {
+		if (exercise.isUnilateral) {
+			if (!lastRightSet) return;
+			addUnilateralPair(
+				exercise.exerciseId,
+				lastRightSet.weightUnit,
+				lastRightSet.reps ?? DEFAULT_REPS,
+				lastRightSet.weight ?? DEFAULT_WEIGHT,
+			);
+		} else {
+			if (!lastSet) return;
+			addSet(
+				exercise.exerciseId,
+				lastSet.weightUnit,
+				lastSet.reps ?? DEFAULT_REPS,
+				lastSet.weight ?? DEFAULT_WEIGHT,
+			);
+		}
 	}, [
 		exercise.exerciseId,
-		exercise.sets.length,
-		newReps,
-		newWeight,
-		previousSets,
+		exercise.isUnilateral,
+		lastSet,
+		lastRightSet,
 		addSet,
-		getDisplayUnit,
+		addUnilateralPair,
 	]);
 
-	const handleDelete = useCallback(
-		(setId: string) => {
-			removeSet(exercise.exerciseId, setId);
-		},
-		[exercise.exerciseId, removeSet],
-	);
+	const handleRemoveLastSet = useCallback(() => {
+		if (exercise.isUnilateral) {
+			removeLastUnilateralPair(exercise.exerciseId);
+		} else {
+			removeLastSet(exercise.exerciseId);
+		}
+	}, [
+		exercise.exerciseId,
+		exercise.isUnilateral,
+		removeLastSet,
+		removeLastUnilateralPair,
+	]);
 
-	const handleFillFromPrevious = useCallback(
-		(setId: string, index: number) => {
-			const prev = previousSets[index];
-			if (!prev) return;
-			updateSet(exercise.exerciseId, setId, {
-				reps: prev.reps,
-				weight: prev.weight,
-				weightUnit: prev.weightUnit,
-			});
-		},
-		[exercise.exerciseId, previousSets, updateSet],
-	);
+	const handleToggleUnilateral = useCallback(() => {
+		toggleUnilateral(exercise.exerciseId);
+	}, [exercise.exerciseId, toggleUnilateral]);
 
-	const getPlaceholder = (index: number, field: "reps" | "weight"): string => {
-		const prev = previousSets[index];
-		if (!prev) return field === "reps" ? "10" : "20";
-		return field === "reps" ? String(prev.reps) : String(prev.weight);
-	};
+	// Can only remove if more than 1 set (or more than 1 pair in unilateral mode)
+	const canRemove = exercise.isUnilateral
+		? setGroups.length > 1
+		: exercise.sets.length > 1;
+	const canDuplicate = exercise.sets.length > 0;
 
+	if (exercise.isUnilateral) {
+		return (
+			<div className="exercise-slide">
+				<div className="exercise-slide-header">
+					<h2>{exercise.exerciseName}</h2>
+					<div className="exercise-slide-controls">
+						<IonToggle
+							checked={exercise.isUnilateral}
+							onIonChange={handleToggleUnilateral}
+							labelPlacement="start"
+						>
+							Unilateral
+						</IonToggle>
+					</div>
+				</div>
+
+				<div className="sets-container" ref={setsContainerRef}>
+					<div className="set-row header unilateral-header">
+						<div>Set</div>
+						<div>Side</div>
+						<div>Reps</div>
+						<div>Weight</div>
+						<div />
+					</div>
+
+					<IonList>
+						{setGroups.map((group) => (
+							<div key={group.setNumber} className="unilateral-group">
+								{/* Right side row */}
+								{group.rightSet && (
+									<SetRow
+										set={group.rightSet}
+										setNumber={group.setNumber}
+										sideLabel="R"
+										exerciseId={exercise.exerciseId}
+										displayUnit={displayUnit}
+										updateSet={updateSet}
+									/>
+								)}
+								{/* Left side row */}
+								{group.leftSet && (
+									<LeftSetRow
+										set={group.leftSet}
+										exerciseId={exercise.exerciseId}
+										displayUnit={displayUnit}
+										updateSet={updateSet}
+									/>
+								)}
+							</div>
+						))}
+					</IonList>
+				</div>
+
+				<RestTimer />
+
+				<div className="set-actions-container">
+					<IonButton
+						className="set-action-button add-button"
+						fill="outline"
+						onClick={handleAddUnilateralPair}
+					>
+						<IonIcon slot="icon-only" icon={add} />
+					</IonButton>
+					<IonButton
+						className="set-action-button duplicate-button"
+						fill="outline"
+						onClick={handleDuplicateLastSet}
+						disabled={!canDuplicate}
+					>
+						<IonIcon slot="icon-only" icon={syncOutline} />
+					</IonButton>
+					<IonButton
+						className="set-action-button remove-button"
+						fill="outline"
+						onClick={handleRemoveLastSet}
+						disabled={!canRemove}
+					>
+						<IonIcon slot="icon-only" icon={close} />
+					</IonButton>
+				</div>
+			</div>
+		);
+	}
+
+	// Normal (non-unilateral) mode
 	return (
 		<div className="exercise-slide">
 			<div className="exercise-slide-header">
 				<h2>{exercise.exerciseName}</h2>
-				{exercise.profileId && <p>Profile: {exercise.profileId}</p>}
+				<div className="exercise-slide-controls">
+					<IonToggle
+						checked={exercise.isUnilateral ?? false}
+						onIonChange={handleToggleUnilateral}
+						labelPlacement="start"
+					>
+						Unilateral
+					</IonToggle>
+				</div>
 			</div>
 
-			<div className="sets-container">
+			<div className="sets-container" ref={setsContainerRef}>
 				<div className="set-row header">
 					<div>Set</div>
-					<div>Previous</div>
 					<div>Reps</div>
 					<div>Weight</div>
 					<div />
@@ -90,88 +353,43 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 
 				<IonList>
 					{exercise.sets.map((set, index) => (
-						<div key={set.id} className="set-row">
-							<div className="set-number">{index + 1}</div>
-							<div className="previous-hint">
-								{previousSets[index] ? (
-									<IonButton
-										fill="clear"
-										size="small"
-										className="fill-button"
-										onClick={() => handleFillFromPrevious(set.id, index)}
-									>
-										<IonIcon slot="start" icon={arrowDown} />
-										{previousSets[index].reps} ×{" "}
-										{formatWeight(
-											previousSets[index].weight,
-											previousSets[index].weightUnit,
-										)}
-									</IonButton>
-								) : (
-									"-"
-								)}
-							</div>
-							<IonInput
-								type="number"
-								value={set.reps}
-								onIonChange={(e) =>
-									updateSet(exercise.exerciseId, set.id, {
-										reps: Number(e.detail.value),
-									})
-								}
-							/>
-							<IonInput
-								type="number"
-								value={set.weight}
-								onIonChange={(e) =>
-									updateSet(exercise.exerciseId, set.id, {
-										weight: Number(e.detail.value),
-									})
-								}
-							/>
-							<IonButton
-								fill="clear"
-								color="danger"
-								size="small"
-								onClick={() => handleDelete(set.id)}
-							>
-								<IonIcon slot="icon-only" icon={close} />
-							</IonButton>
-						</div>
+						<SetRow
+							key={set.id}
+							set={set}
+							setNumber={index + 1}
+							exerciseId={exercise.exerciseId}
+							displayUnit={displayUnit}
+							updateSet={updateSet}
+						/>
 					))}
 				</IonList>
-
-				<div className="set-row">
-					<div className="set-number">{exercise.sets.length + 1}</div>
-					<div className="previous-hint">
-						{previousSets[exercise.sets.length]
-							? `${previousSets[exercise.sets.length].reps} × ${formatWeight(previousSets[exercise.sets.length].weight, previousSets[exercise.sets.length].weightUnit)}`
-							: "-"}
-					</div>
-					<IonInput
-						type="number"
-						placeholder={getPlaceholder(exercise.sets.length, "reps")}
-						value={newReps}
-						onIonChange={(e) =>
-							setNewReps(e.detail.value ? Number(e.detail.value) : undefined)
-						}
-					/>
-					<IonInput
-						type="number"
-						placeholder={getPlaceholder(exercise.sets.length, "weight")}
-						value={newWeight}
-						onIonChange={(e) =>
-							setNewWeight(e.detail.value ? Number(e.detail.value) : undefined)
-						}
-					/>
-					<div>{getDisplayUnit()}</div>
-				</div>
 			</div>
 
-			<div className="add-set-button-container">
-				<IonButton className="add-set-button" onClick={handleAddSet}>
-					<IonIcon slot="start" icon={add} />
-					Add Set
+			<RestTimer />
+
+			<div className="set-actions-container">
+				<IonButton
+					className="set-action-button add-button"
+					fill="outline"
+					onClick={handleAddSet}
+				>
+					<IonIcon slot="icon-only" icon={add} />
+				</IonButton>
+				<IonButton
+					className="set-action-button duplicate-button"
+					fill="outline"
+					onClick={handleDuplicateLastSet}
+					disabled={!canDuplicate}
+				>
+					<IonIcon slot="icon-only" icon={syncOutline} />
+				</IonButton>
+				<IonButton
+					className="set-action-button remove-button"
+					fill="outline"
+					onClick={handleRemoveLastSet}
+					disabled={!canRemove}
+				>
+					<IonIcon slot="icon-only" icon={close} />
 				</IonButton>
 			</div>
 		</div>

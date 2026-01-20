@@ -30,14 +30,16 @@ export interface StoredWorkoutExercise {
 	profileId?: string;
 	exerciseName: string;
 	sets: StoredSet[];
+	isUnilateral?: boolean;
 }
 
 export interface StoredSet {
 	id: string;
-	reps: number;
-	weight: number;
+	reps?: number;
+	weight?: number;
 	weightUnit: string;
 	createdAt: string;
+	side?: "L" | "R";
 }
 
 export interface StoredSettings {

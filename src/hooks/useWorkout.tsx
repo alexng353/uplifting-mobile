@@ -33,9 +33,16 @@ interface WorkoutContextValue {
 	reorderExercises: (newOrder: string[]) => Promise<void>;
 	addSet: (
 		exerciseId: string,
-		reps: number,
-		weight: number,
 		weightUnit: string,
+		reps?: number,
+		weight?: number,
+		side?: "L" | "R",
+	) => Promise<void>;
+	addUnilateralPair: (
+		exerciseId: string,
+		weightUnit: string,
+		reps?: number,
+		weight?: number,
 	) => Promise<void>;
 	updateSet: (
 		exerciseId: string,
@@ -43,6 +50,9 @@ interface WorkoutContextValue {
 		updates: Partial<StoredSet>,
 	) => Promise<void>;
 	removeSet: (exerciseId: string, setId: string) => Promise<void>;
+	removeLastSet: (exerciseId: string) => Promise<void>;
+	removeLastUnilateralPair: (exerciseId: string) => Promise<void>;
+	toggleUnilateral: (exerciseId: string) => Promise<void>;
 	finishWorkout: (
 		name?: string,
 		gymLocation?: string,
@@ -128,11 +138,21 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 		async (exerciseId: string, exerciseName: string, profileId?: string) => {
 			if (!workout) return;
 
+			const settings = await getSettings();
+			const unit = settings.displayUnit ?? "kg";
+
+			// Auto-add first empty set
+			const firstSet: StoredSet = {
+				id: generateId(),
+				weightUnit: unit,
+				createdAt: new Date().toISOString(),
+			};
+
 			const newExercise: StoredWorkoutExercise = {
 				exerciseId,
 				exerciseName,
 				profileId,
-				sets: [],
+				sets: [firstSet],
 			};
 
 			const updated = {
@@ -177,9 +197,10 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 	const addSet = useCallback(
 		async (
 			exerciseId: string,
-			reps: number,
-			weight: number,
 			weightUnit: string,
+			reps?: number,
+			weight?: number,
+			side?: "L" | "R",
 		) => {
 			if (!workout) return;
 
@@ -189,12 +210,70 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 				weight,
 				weightUnit,
 				createdAt: new Date().toISOString(),
+				side,
 			};
 
 			const updated = {
 				...workout,
 				exercises: workout.exercises.map((e) =>
 					e.exerciseId === exerciseId ? { ...e, sets: [...e.sets, newSet] } : e,
+				),
+			};
+			await saveWorkout(updated);
+		},
+		[workout, saveWorkout],
+	);
+
+	const addUnilateralPair = useCallback(
+		async (
+			exerciseId: string,
+			weightUnit: string,
+			reps?: number,
+			weight?: number,
+		) => {
+			if (!workout) return;
+
+			const rightSet: StoredSet = {
+				id: generateId(),
+				reps,
+				weight,
+				weightUnit,
+				createdAt: new Date().toISOString(),
+				side: "R",
+			};
+
+			const leftSet: StoredSet = {
+				id: generateId(),
+				reps,
+				weight,
+				weightUnit,
+				createdAt: new Date().toISOString(),
+				side: "L",
+			};
+
+			const updated = {
+				...workout,
+				exercises: workout.exercises.map((e) =>
+					e.exerciseId === exerciseId
+						? { ...e, sets: [...e.sets, rightSet, leftSet] }
+						: e,
+				),
+			};
+			await saveWorkout(updated);
+		},
+		[workout, saveWorkout],
+	);
+
+	const toggleUnilateral = useCallback(
+		async (exerciseId: string) => {
+			if (!workout) return;
+
+			const updated = {
+				...workout,
+				exercises: workout.exercises.map((e) =>
+					e.exerciseId === exerciseId
+						? { ...e, isUnilateral: !e.isUnilateral }
+						: e,
 				),
 			};
 			await saveWorkout(updated);
@@ -233,6 +312,53 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 				exercises: workout.exercises.map((e) =>
 					e.exerciseId === exerciseId
 						? { ...e, sets: e.sets.filter((s) => s.id !== setId) }
+						: e,
+				),
+			};
+			await saveWorkout(updated);
+		},
+		[workout, saveWorkout],
+	);
+
+	const removeLastSet = useCallback(
+		async (exerciseId: string) => {
+			if (!workout) return;
+
+			const updated = {
+				...workout,
+				exercises: workout.exercises.map((e) =>
+					e.exerciseId === exerciseId ? { ...e, sets: e.sets.slice(0, -1) } : e,
+				),
+			};
+			await saveWorkout(updated);
+		},
+		[workout, saveWorkout],
+	);
+
+	const removeLastUnilateralPair = useCallback(
+		async (exerciseId: string) => {
+			if (!workout) return;
+
+			const exercise = workout.exercises.find(
+				(e) => e.exerciseId === exerciseId,
+			);
+			if (!exercise) return;
+
+			// Find the last R and L sets
+			const rightSets = exercise.sets.filter((s) => s.side === "R");
+			const leftSets = exercise.sets.filter((s) => s.side === "L");
+			const lastRight = rightSets[rightSets.length - 1];
+			const lastLeft = leftSets[leftSets.length - 1];
+
+			const idsToRemove = new Set<string>();
+			if (lastRight) idsToRemove.add(lastRight.id);
+			if (lastLeft) idsToRemove.add(lastLeft.id);
+
+			const updated = {
+				...workout,
+				exercises: workout.exercises.map((e) =>
+					e.exerciseId === exerciseId
+						? { ...e, sets: e.sets.filter((s) => !idsToRemove.has(s.id)) }
 						: e,
 				),
 			};
@@ -287,8 +413,12 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 				removeExercise,
 				reorderExercises,
 				addSet,
+				addUnilateralPair,
 				updateSet,
 				removeSet,
+				removeLastSet,
+				removeLastUnilateralPair,
+				toggleUnilateral,
 				finishWorkout,
 				cancelWorkout,
 				hasPendingWorkout,
