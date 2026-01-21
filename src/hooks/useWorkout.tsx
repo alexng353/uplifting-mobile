@@ -270,11 +270,62 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 
 			const updated = {
 				...workout,
-				exercises: workout.exercises.map((e) =>
-					e.exerciseId === exerciseId
-						? { ...e, isUnilateral: !e.isUnilateral }
-						: e,
-				),
+				exercises: workout.exercises.map((e) => {
+					if (e.exerciseId !== exerciseId) {
+						return e;
+					}
+
+					const isCurrentlyUnilateral = e.isUnilateral ?? false;
+
+					if (!isCurrentlyUnilateral) {
+						const expandedSets = e.sets.flatMap((set) => {
+							if (set.side) {
+								return [set];
+							}
+
+							const rightSet: StoredSet = { ...set, side: "R" };
+							const leftSet: StoredSet = {
+								...set,
+								id: generateId(),
+								side: "L",
+							};
+							return [rightSet, leftSet];
+						});
+
+						return { ...e, isUnilateral: true, sets: expandedSets };
+					}
+
+					const rightSets = e.sets.filter(
+						(set) => set.side === "R" || !set.side,
+					);
+					const leftSets = e.sets.filter((set) => set.side === "L");
+					const maxLen = Math.max(rightSets.length, leftSets.length);
+					const mergedSets: StoredSet[] = [];
+
+					for (let i = 0; i < maxLen; i += 1) {
+						const rightSet = rightSets[i];
+						const leftSet = leftSets[i];
+
+						if (!rightSet && !leftSet) continue;
+
+						const baseSet = rightSet ?? leftSet;
+						if (!baseSet) continue;
+
+						mergedSets.push({
+							id: rightSet?.id ?? leftSet?.id ?? generateId(),
+							reps: rightSet?.reps ?? leftSet?.reps,
+							weight: rightSet?.weight ?? leftSet?.weight,
+							weightUnit:
+								rightSet?.weightUnit ??
+								leftSet?.weightUnit ??
+								baseSet.weightUnit,
+							createdAt:
+								rightSet?.createdAt ?? leftSet?.createdAt ?? baseSet.createdAt,
+						});
+					}
+
+					return { ...e, isUnilateral: false, sets: mergedSets };
+				}),
 			};
 			await saveWorkout(updated);
 		},
