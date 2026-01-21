@@ -1,6 +1,6 @@
 import { IonButton, IonIcon, IonInput, IonList, IonToggle } from "@ionic/react";
 import { add, close, syncOutline } from "ionicons/icons";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettings } from "../../../hooks/useSettings";
 import { useWorkout } from "../../../hooks/useWorkout";
 import type {
@@ -29,6 +29,8 @@ function SetRow({
 	exerciseId,
 	displayUnit,
 	updateSet,
+	onInputFocus,
+	onInputBlur,
 }: {
 	set: StoredSet;
 	setNumber: number;
@@ -40,6 +42,8 @@ function SetRow({
 		setId: string,
 		updates: Partial<StoredSet>,
 	) => void;
+	onInputFocus: () => void;
+	onInputBlur: () => void;
 }) {
 	const isUnilateral = !!sideLabel;
 
@@ -56,6 +60,8 @@ function SetRow({
 				inputMode="decimal"
 				value={set.reps}
 				placeholder={String(DEFAULT_REPS)}
+				onIonFocus={onInputFocus}
+				onIonBlur={onInputBlur}
 				onIonChange={(e) =>
 					updateSet(exerciseId, set.id, {
 						reps: e.detail.value ? Number(e.detail.value) : undefined,
@@ -67,6 +73,8 @@ function SetRow({
 				inputMode="decimal"
 				value={set.weight}
 				placeholder={String(DEFAULT_WEIGHT)}
+				onIonFocus={onInputFocus}
+				onIonBlur={onInputBlur}
 				onIonChange={(e) =>
 					updateSet(exerciseId, set.id, {
 						weight: e.detail.value ? Number(e.detail.value) : undefined,
@@ -83,6 +91,8 @@ function LeftSetRow({
 	exerciseId,
 	displayUnit,
 	updateSet,
+	onInputFocus,
+	onInputBlur,
 }: {
 	set: StoredSet;
 	exerciseId: string;
@@ -92,6 +102,8 @@ function LeftSetRow({
 		setId: string,
 		updates: Partial<StoredSet>,
 	) => void;
+	onInputFocus: () => void;
+	onInputBlur: () => void;
 }) {
 	return (
 		<div className="set-row unilateral-row left-row">
@@ -102,6 +114,8 @@ function LeftSetRow({
 				inputMode="decimal"
 				value={set.reps}
 				placeholder={String(DEFAULT_REPS)}
+				onIonFocus={onInputFocus}
+				onIonBlur={onInputBlur}
 				onIonChange={(e) =>
 					updateSet(exerciseId, set.id, {
 						reps: e.detail.value ? Number(e.detail.value) : undefined,
@@ -113,6 +127,8 @@ function LeftSetRow({
 				inputMode="decimal"
 				value={set.weight}
 				placeholder={String(DEFAULT_WEIGHT)}
+				onIonFocus={onInputFocus}
+				onIonBlur={onInputBlur}
 				onIonChange={(e) =>
 					updateSet(exerciseId, set.id, {
 						weight: e.detail.value ? Number(e.detail.value) : undefined,
@@ -135,8 +151,24 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 	} = useWorkout();
 	const { getDisplayUnit } = useSettings();
 	const setsContainerRef = useRef<HTMLDivElement>(null);
+	const inputFocusCountRef = useRef(0);
+	const [isInputFocused, setIsInputFocused] = useState(false);
 
 	const displayUnit = getDisplayUnit();
+
+	const handleInputFocus = useCallback(() => {
+		inputFocusCountRef.current += 1;
+		setIsInputFocused(true);
+	}, []);
+
+	const handleInputBlur = useCallback(() => {
+		inputFocusCountRef.current = Math.max(0, inputFocusCountRef.current - 1);
+		setTimeout(() => {
+			if (inputFocusCountRef.current === 0) {
+				setIsInputFocused(false);
+			}
+		}, 0);
+	}, []);
 
 	// Auto-scroll to bottom when sets change
 	const setsLength = exercise.sets.length;
@@ -284,6 +316,8 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 										exerciseId={exercise.exerciseId}
 										displayUnit={displayUnit}
 										updateSet={updateSet}
+										onInputFocus={handleInputFocus}
+										onInputBlur={handleInputBlur}
 									/>
 								)}
 								{/* Left side row */}
@@ -293,6 +327,8 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 										exerciseId={exercise.exerciseId}
 										displayUnit={displayUnit}
 										updateSet={updateSet}
+										onInputFocus={handleInputFocus}
+										onInputBlur={handleInputBlur}
 									/>
 								)}
 							</div>
@@ -302,7 +338,11 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 
 				<RestTimer />
 
-				<div className="set-actions-container">
+				<div
+					className={`set-actions-container${
+						isInputFocused ? " is-hidden" : ""
+					}`}
+				>
 					<IonButton
 						className="set-action-button add-button"
 						fill="outline"
@@ -364,6 +404,8 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 							exerciseId={exercise.exerciseId}
 							displayUnit={displayUnit}
 							updateSet={updateSet}
+							onInputFocus={handleInputFocus}
+							onInputBlur={handleInputBlur}
 						/>
 					))}
 				</IonList>
@@ -371,7 +413,9 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 
 			<RestTimer />
 
-			<div className="set-actions-container">
+			<div
+				className={`set-actions-container${isInputFocused ? " is-hidden" : ""}`}
+			>
 				<IonButton
 					className="set-action-button add-button"
 					fill="outline"
