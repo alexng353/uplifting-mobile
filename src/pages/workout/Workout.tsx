@@ -11,7 +11,7 @@ import {
 	IonToolbar,
 } from "@ionic/react";
 import { bed, checkmark, close, reorderFour } from "ionicons/icons";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -20,6 +20,10 @@ import "swiper/css/pagination";
 import "./Workout.css";
 import { useSync } from "../../hooks/useSync";
 import { useWorkout } from "../../hooks/useWorkout";
+import {
+	getWorkoutLastSlide,
+	setWorkoutLastSlide,
+} from "../../services/local-storage";
 import AddExerciseSlide from "./components/AddExerciseSlide";
 import ExerciseSlide from "./components/ExerciseSlide";
 import ReorderModal from "./components/ReorderModal";
@@ -39,6 +43,12 @@ function WorkoutContent() {
 	const [showReorder, setShowReorder] = useState(false);
 	const [showCancelAlert, setShowCancelAlert] = useState(false);
 	const swiperRef = useRef<SwiperType | null>(null);
+	const [isSwiperReady, setIsSwiperReady] = useState(false);
+	const [lastSlideIndex, setLastSlideIndex] = useState<number | null>(null);
+	const hasRestoredSlideRef = useRef(false);
+	const hasUserInteractedRef = useRef(false);
+	const workoutId = workout?.id;
+	const exerciseCount = workout?.exercises.length ?? 0;
 
 	const handleFinish = useCallback(() => {
 		setShowSummary(true);
@@ -72,6 +82,95 @@ function WorkoutContent() {
 		// Attempt to sync immediately
 		forceSync();
 	}, [logRestDay, forceSync]);
+
+	const handleSlideChange = useCallback(
+		(swiper: SwiperType) => {
+			if (!workoutId) return;
+			const nextIndex = swiper.activeIndex;
+
+			if (!hasRestoredSlideRef.current) {
+				hasUserInteractedRef.current = true;
+				hasRestoredSlideRef.current = true;
+			}
+
+			setLastSlideIndex(nextIndex);
+			void setWorkoutLastSlide(workoutId, nextIndex);
+		},
+		[workoutId],
+	);
+
+	useEffect(() => {
+		let isCancelled = false;
+		hasRestoredSlideRef.current = false;
+		hasUserInteractedRef.current = false;
+		setLastSlideIndex(null);
+		setIsSwiperReady(false);
+
+		if (!workoutId) {
+			return () => {
+				isCancelled = true;
+			};
+		}
+
+		const loadLastSlide = async () => {
+			const stored = await getWorkoutLastSlide();
+			if (isCancelled || hasUserInteractedRef.current) return;
+
+			const initialIndex =
+				stored?.workoutId === workoutId ? stored.slideIndex : 0;
+			setLastSlideIndex(initialIndex);
+		};
+
+		void loadLastSlide();
+
+		return () => {
+			isCancelled = true;
+		};
+	}, [workoutId]);
+
+	useEffect(() => {
+		if (!workoutId || lastSlideIndex === null || !isSwiperReady) {
+			return;
+		}
+		if (!swiperRef.current || hasRestoredSlideRef.current) {
+			return;
+		}
+		if (hasUserInteractedRef.current) {
+			return;
+		}
+
+		const maxIndex = exerciseCount;
+		const clampedIndex = Math.max(0, Math.min(lastSlideIndex, maxIndex));
+
+		hasRestoredSlideRef.current = true;
+
+		if (swiperRef.current.activeIndex !== clampedIndex) {
+			swiperRef.current.slideTo(clampedIndex, 0);
+		}
+
+		if (clampedIndex !== lastSlideIndex) {
+			setLastSlideIndex(clampedIndex);
+		}
+		void setWorkoutLastSlide(workoutId, clampedIndex);
+	}, [workoutId, lastSlideIndex, exerciseCount, isSwiperReady]);
+
+	useEffect(() => {
+		if (!workoutId || lastSlideIndex === null || !isSwiperReady) {
+			return;
+		}
+		if (!swiperRef.current || !hasRestoredSlideRef.current) {
+			return;
+		}
+
+		const maxIndex = exerciseCount;
+		if (lastSlideIndex <= maxIndex) {
+			return;
+		}
+
+		swiperRef.current.slideTo(maxIndex, 0);
+		setLastSlideIndex(maxIndex);
+		void setWorkoutLastSlide(workoutId, maxIndex);
+	}, [workoutId, lastSlideIndex, exerciseCount, isSwiperReady]);
 
 	if (!isActive) {
 		return (
@@ -128,7 +227,9 @@ function WorkoutContent() {
 				<Swiper
 					onSwiper={(swiper) => {
 						swiperRef.current = swiper;
+						setIsSwiperReady(true);
 					}}
+					onSlideChange={handleSlideChange}
 					modules={[Pagination]}
 					pagination={{ clickable: true }}
 					spaceBetween={0}
