@@ -1,5 +1,5 @@
 import { IonButton, IonIcon, IonInput, IonList, IonToggle } from "@ionic/react";
-import { add, close, syncOutline } from "ionicons/icons";
+import { add, close, syncOutline, trash } from "ionicons/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettings } from "../../../hooks/useSettings";
 import { useWorkout } from "../../../hooks/useWorkout";
@@ -148,6 +148,7 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 		toggleUnilateral,
 		removeLastSet,
 		removeLastUnilateralPair,
+		removeExercise,
 	} = useWorkout();
 	const { getDisplayUnit } = useSettings();
 	const setsContainerRef = useRef<HTMLDivElement>(null);
@@ -273,6 +274,10 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 		toggleUnilateral(exercise.exerciseId);
 	}, [exercise.exerciseId, toggleUnilateral]);
 
+	const handleRemoveExercise = useCallback(() => {
+		void removeExercise(exercise.exerciseId);
+	}, [exercise.exerciseId, removeExercise]);
+
 	// Can only remove if more than 1 set (or more than 1 pair in unilateral mode)
 	const canRemove = exercise.isUnilateral
 		? setGroups.length > 1
@@ -292,6 +297,14 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 						>
 							Unilateral
 						</IonToggle>
+						<IonButton
+							className="exercise-remove-button"
+							color="danger"
+							onClick={handleRemoveExercise}
+						>
+							<IonIcon slot="start" icon={trash} />
+							Remove Exercise
+						</IonButton>
 					</div>
 				</div>
 
@@ -384,6 +397,14 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 					>
 						Unilateral
 					</IonToggle>
+					<IonButton
+						className="exercise-remove-button"
+						color="danger"
+						onClick={handleRemoveExercise}
+					>
+						<IonIcon slot="start" icon={trash} />
+						Remove Exercise
+					</IonButton>
 				</div>
 			</div>
 
