@@ -56,6 +56,18 @@
 	align-items: center;
 	gap: 1rem;
 	margin-top: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.exercise-remove-button {
+	--background: var(--ion-color-danger);
+	--background-activated: var(--ion-color-danger-shade);
+	--background-hover: var(--ion-color-danger-shade);
+	--color: var(--ion-color-danger-contrast);
+	--padding-start: 1rem;
+	--padding-end: 1rem;
+	--border-radius: 8px;
+	font-weight: 600;
 }
 
 .sets-container {
