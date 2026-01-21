@@ -2,7 +2,11 @@ import { IonButton, IonIcon } from "@ionic/react";
 import { pauseOutline, playOutline } from "ionicons/icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export default function RestTimer() {
+type RestTimerProps = {
+	isHidden?: boolean;
+};
+
+export default function RestTimer({ isHidden = false }: RestTimerProps) {
 	const [elapsedMs, setElapsedMs] = useState(0);
 	const [isRunning, setIsRunning] = useState(false);
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -75,7 +79,7 @@ export default function RestTimer() {
 	}, []);
 
 	return (
-		<div className="rest-timer-container">
+		<div className={`rest-timer-container${isHidden ? " is-hidden" : ""}`}>
 			<div className="rest-timer-display">{formatTime(elapsedMs)}</div>
 			<IonButton
 				className="rest-timer-button"

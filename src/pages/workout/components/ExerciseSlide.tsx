@@ -336,7 +336,7 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 					</IonList>
 				</div>
 
-				<RestTimer />
+				<RestTimer isHidden={isInputFocused} />
 
 				<div
 					className={`set-actions-container${
@@ -411,7 +411,7 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 				</IonList>
 			</div>
 
-			<RestTimer />
+			<RestTimer isHidden={isInputFocused} />
 
 			<div
 				className={`set-actions-container${isInputFocused ? " is-hidden" : ""}`}
