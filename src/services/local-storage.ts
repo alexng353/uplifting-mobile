@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
 	PROFILES: "profiles",
 	LAST_SYNC: "last_sync",
 	PENDING_WORKOUT: "pending_workout",
+	WORKOUT_LAST_SLIDE: "workout_last_slide",
 } as const;
 
 // Workout kind type
@@ -23,6 +24,11 @@ export interface StoredWorkout {
 	privacy: string;
 	gymLocation?: string;
 	kind: WorkoutKind;
+}
+
+export interface StoredWorkoutLastSlide {
+	workoutId: string;
+	slideIndex: number;
 }
 
 export interface StoredWorkoutExercise {
@@ -98,6 +104,24 @@ export async function setCurrentWorkout(
 	} else {
 		await set(STORAGE_KEYS.CURRENT_WORKOUT, workout);
 	}
+}
+
+export async function getWorkoutLastSlide(): Promise<StoredWorkoutLastSlide | null> {
+	return (
+		(await get<StoredWorkoutLastSlide>(STORAGE_KEYS.WORKOUT_LAST_SLIDE)) ??
+		null
+	);
+}
+
+export async function setWorkoutLastSlide(
+	workoutId: string,
+	slideIndex: number,
+): Promise<void> {
+	await set(STORAGE_KEYS.WORKOUT_LAST_SLIDE, { workoutId, slideIndex });
+}
+
+export async function clearWorkoutLastSlide(): Promise<void> {
+	await del(STORAGE_KEYS.WORKOUT_LAST_SLIDE);
 }
 
 export async function getSettings(): Promise<StoredSettings> {
