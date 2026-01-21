@@ -151,24 +151,50 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 	} = useWorkout();
 	const { getDisplayUnit } = useSettings();
 	const setsContainerRef = useRef<HTMLDivElement>(null);
-	const inputFocusCountRef = useRef(0);
 	const [isInputFocused, setIsInputFocused] = useState(false);
 
 	const displayUnit = getDisplayUnit();
 
-	const handleInputFocus = useCallback(() => {
-		inputFocusCountRef.current += 1;
-		setIsInputFocused(true);
+	const isElementWithinSetsContainer = useCallback((element: Element | null) => {
+		const container = setsContainerRef.current;
+		if (!container || !element) {
+			return false;
+		}
+
+		if (container.contains(element)) {
+			return true;
+		}
+
+		const rootNode = element.getRootNode();
+		if (rootNode instanceof ShadowRoot) {
+			return container.contains(rootNode.host);
+		}
+
+		return false;
 	}, []);
 
+	const syncInputFocusState = useCallback(() => {
+		const activeElement = document.activeElement;
+		setIsInputFocused(isElementWithinSetsContainer(activeElement));
+	}, [isElementWithinSetsContainer]);
+
+	const handleInputFocus = useCallback(() => {
+		syncInputFocusState();
+	}, [syncInputFocusState]);
+
 	const handleInputBlur = useCallback(() => {
-		inputFocusCountRef.current = Math.max(0, inputFocusCountRef.current - 1);
-		setTimeout(() => {
-			if (inputFocusCountRef.current === 0) {
-				setIsInputFocused(false);
-			}
-		}, 0);
-	}, []);
+		requestAnimationFrame(() => {
+			syncInputFocusState();
+		});
+	}, [syncInputFocusState]);
+
+	useEffect(() => {
+		if (!isInputFocused) {
+			return;
+		}
+
+		syncInputFocusState();
+	}, [exercise.sets, exercise.isUnilateral, isInputFocused, syncInputFocusState]);
 
 	// Auto-scroll to bottom when sets change
 	const setsLength = exercise.sets.length;
@@ -336,7 +362,7 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 					</IonList>
 				</div>
 
-				<RestTimer />
+				<RestTimer isHidden={isInputFocused} />
 
 				<div
 					className={`set-actions-container${
@@ -411,7 +437,7 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 				</IonList>
 			</div>
 
-			<RestTimer />
+			<RestTimer isHidden={isInputFocused} />
 
 			<div
 				className={`set-actions-container${isInputFocused ? " is-hidden" : ""}`}
