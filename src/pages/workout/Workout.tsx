@@ -10,7 +10,7 @@ import {
 	IonTitle,
 	IonToolbar,
 } from "@ionic/react";
-import { bed, checkmark, close, reorderFour } from "ionicons/icons";
+import { bed, checkmark, close, construct, reorderFour } from "ionicons/icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { Pagination } from "swiper/modules";
@@ -18,6 +18,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "./Workout.css";
+import { useMe } from "../../hooks/useMe";
 import { useSync } from "../../hooks/useSync";
 import { useWorkout } from "../../hooks/useWorkout";
 import {
@@ -25,6 +26,7 @@ import {
 	setWorkoutLastSlide,
 } from "../../services/local-storage";
 import AddExerciseSlide from "./components/AddExerciseSlide";
+import AdminExerciseModal from "./components/AdminExerciseModal";
 import ExerciseSlide from "./components/ExerciseSlide";
 import ReorderModal from "./components/ReorderModal";
 import WorkoutSummary from "./components/WorkoutSummary";
@@ -39,9 +41,11 @@ function WorkoutContent() {
 		cancelWorkout,
 	} = useWorkout();
 	const { forceSync } = useSync();
+	const { data: me } = useMe();
 	const [showSummary, setShowSummary] = useState(false);
 	const [showReorder, setShowReorder] = useState(false);
 	const [showCancelAlert, setShowCancelAlert] = useState(false);
+	const [showAdminExercise, setShowAdminExercise] = useState(false);
 	const swiperRef = useRef<SwiperType | null>(null);
 	const [isSwiperReady, setIsSwiperReady] = useState(false);
 	const [lastSlideIndex, setLastSlideIndex] = useState<number | null>(null);
@@ -49,6 +53,21 @@ function WorkoutContent() {
 	const hasUserInteractedRef = useRef(false);
 	const workoutId = workout?.id;
 	const exerciseCount = workout?.exercises.length ?? 0;
+	const isAdmin = me?.is_admin ?? false;
+
+	const adminExerciseButton = isAdmin ? (
+		<IonButton onClick={() => setShowAdminExercise(true)}>
+			<IonIcon slot="icon-only" icon={construct} />
+		</IonButton>
+	) : null;
+
+	const adminExerciseModal = (
+		<AdminExerciseModal
+			isOpen={showAdminExercise}
+			isAdmin={isAdmin}
+			onDidDismiss={() => setShowAdminExercise(false)}
+		/>
+	);
 
 	const handleFinish = useCallback(() => {
 		setShowSummary(true);
@@ -178,6 +197,9 @@ function WorkoutContent() {
 				<IonHeader>
 					<IonToolbar>
 						<IonTitle>Workout</IonTitle>
+						{isAdmin && (
+							<IonButtons slot="end">{adminExerciseButton}</IonButtons>
+						)}
 					</IonToolbar>
 				</IonHeader>
 				<IonContent className="ion-padding" fullscreen>
@@ -199,6 +221,7 @@ function WorkoutContent() {
 						</IonButton>
 					</div>
 				</IonContent>
+				{adminExerciseModal}
 			</IonPage>
 		);
 	}
@@ -214,6 +237,7 @@ function WorkoutContent() {
 						</IonButton>
 					</IonButtons>
 					<IonButtons slot="end">
+						{adminExerciseButton}
 						<IonButton onClick={() => setShowCancelAlert(true)} color="danger">
 							<IonIcon slot="icon-only" icon={close} />
 						</IonButton>
@@ -282,6 +306,7 @@ function WorkoutContent() {
 					]}
 				/>
 			)}
+			{adminExerciseModal}
 		</IonPage>
 	);
 }
