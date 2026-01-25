@@ -38,6 +38,7 @@ export default function AddExerciseSlide({
 	);
 	const [showProfileSheet, setShowProfileSheet] = useState(false);
 	const [showNewProfileAlert, setShowNewProfileAlert] = useState(false);
+	const [newProfileAlertKey, setNewProfileAlertKey] = useState(0);
 	const transitioningToAlertRef = useRef(false);
 
 	const { data: exercises, isLoading } = useExercises(searchText);
@@ -113,6 +114,7 @@ export default function AddExerciseSlide({
 				text: "Create new profile...",
 				handler: () => {
 					transitioningToAlertRef.current = true;
+					setNewProfileAlertKey((key) => key + 1);
 					setShowProfileSheet(false);
 					setShowNewProfileAlert(true);
 				},
@@ -262,6 +264,7 @@ export default function AddExerciseSlide({
 			/>
 
 			<IonAlert
+				key={newProfileAlertKey}
 				isOpen={showNewProfileAlert}
 				onDidDismiss={() => {
 					setShowNewProfileAlert(false);
