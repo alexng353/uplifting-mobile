@@ -1,5 +1,6 @@
 import {
 	IonBackButton,
+	IonAlert,
 	IonButton,
 	IonButtons,
 	IonContent,
@@ -59,6 +60,7 @@ export default function WorkoutDetail() {
 	const [editGymLocation, setEditGymLocation] = useState("");
 	const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 	const [editEndTime, setEditEndTime] = useState<string | null>(null);
+	const [showDeleteWorkoutAlert, setShowDeleteWorkoutAlert] = useState(false);
 
 	// Fetch workout with sets
 	const {
@@ -383,7 +385,7 @@ export default function WorkoutDetail() {
 										expand="block"
 										color="danger"
 										fill="outline"
-										onClick={() => deleteWorkoutMutation.mutate()}
+										onClick={() => setShowDeleteWorkoutAlert(true)}
 									>
 										<IonIcon slot="start" icon={trash} />
 										Delete Workout
@@ -489,6 +491,26 @@ export default function WorkoutDetail() {
 							/>
 						</IonContent>
 					</IonModal>
+					<IonAlert
+						isOpen={showDeleteWorkoutAlert}
+						onDidDismiss={() => setShowDeleteWorkoutAlert(false)}
+						header="Delete Workout"
+						message="Are you sure you want to delete this workout? This cannot be undone."
+						buttons={[
+							{
+								text: "Cancel",
+								role: "cancel",
+							},
+							{
+								text: "Delete",
+								role: "destructive",
+								handler: () => {
+									setShowDeleteWorkoutAlert(false);
+									deleteWorkoutMutation.mutate();
+								},
+							},
+						]}
+					/>
 				</IonContent>
 			</IonPage>
 		);

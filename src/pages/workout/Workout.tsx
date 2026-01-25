@@ -293,12 +293,14 @@ function WorkoutContent() {
 					message="Are you sure you want to cancel this workout? All progress will be lost."
 					buttons={[
 						{
-							text: "No, Keep Going",
+							text: "No",
 							role: "cancel",
+							cssClass: "workout-cancel-alert-button-no",
 						},
 						{
-							text: "Yes, Cancel",
+							text: "Cancel",
 							role: "destructive",
+							cssClass: "workout-cancel-alert-button-cancel",
 							handler: () => {
 								cancelWorkout();
 							},
