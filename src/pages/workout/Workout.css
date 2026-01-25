@@ -21,6 +21,16 @@
 	margin-top: 1rem;
 }
 
+.alert-button.workout-cancel-alert-button-no,
+.alert-button.workout-cancel-alert-button-no .alert-button-inner {
+	color: var(--ion-color-primary);
+}
+
+.alert-button.workout-cancel-alert-button-cancel,
+.alert-button.workout-cancel-alert-button-cancel .alert-button-inner {
+	color: var(--ion-color-danger);
+}
+
 .workout-swiper {
 	height: 100%;
 }
