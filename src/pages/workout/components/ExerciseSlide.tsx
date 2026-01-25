@@ -156,23 +156,26 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 
 	const displayUnit = getDisplayUnit();
 
-	const isElementWithinSetsContainer = useCallback((element: Element | null) => {
-		const container = setsContainerRef.current;
-		if (!container || !element) {
+	const isElementWithinSetsContainer = useCallback(
+		(element: Element | null) => {
+			const container = setsContainerRef.current;
+			if (!container || !element) {
+				return false;
+			}
+
+			if (container.contains(element)) {
+				return true;
+			}
+
+			const rootNode = element.getRootNode();
+			if (rootNode instanceof ShadowRoot) {
+				return container.contains(rootNode.host);
+			}
+
 			return false;
-		}
-
-		if (container.contains(element)) {
-			return true;
-		}
-
-		const rootNode = element.getRootNode();
-		if (rootNode instanceof ShadowRoot) {
-			return container.contains(rootNode.host);
-		}
-
-		return false;
-	}, []);
+		},
+		[],
+	);
 
 	const syncInputFocusState = useCallback(() => {
 		const activeElement = document.activeElement;
@@ -195,7 +198,7 @@ export default function ExerciseSlide({ exercise }: ExerciseSlideProps) {
 		}
 
 		syncInputFocusState();
-	}, [exercise.sets, exercise.isUnilateral, isInputFocused, syncInputFocusState]);
+	}, [isInputFocused, syncInputFocusState]);
 
 	// Auto-scroll to bottom when sets change
 	const setsLength = exercise.sets.length;

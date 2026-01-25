@@ -18,8 +18,8 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "./Workout.css";
-import { useSync } from "../../hooks/useSync";
 import { useMe } from "../../hooks/useMe";
+import { useSync } from "../../hooks/useSync";
 import { useWorkout } from "../../hooks/useWorkout";
 import {
 	getWorkoutLastSlide,
@@ -197,7 +197,9 @@ function WorkoutContent() {
 				<IonHeader>
 					<IonToolbar>
 						<IonTitle>Workout</IonTitle>
-						{isAdmin && <IonButtons slot="end">{adminExerciseButton}</IonButtons>}
+						{isAdmin && (
+							<IonButtons slot="end">{adminExerciseButton}</IonButtons>
+						)}
 					</IonToolbar>
 				</IonHeader>
 				<IonContent className="ion-padding" fullscreen>

@@ -108,8 +108,7 @@ export async function setCurrentWorkout(
 
 export async function getWorkoutLastSlide(): Promise<StoredWorkoutLastSlide | null> {
 	return (
-		(await get<StoredWorkoutLastSlide>(STORAGE_KEYS.WORKOUT_LAST_SLIDE)) ??
-		null
+		(await get<StoredWorkoutLastSlide>(STORAGE_KEYS.WORKOUT_LAST_SLIDE)) ?? null
 	);
 }
 

@@ -26,12 +26,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { add, close, closeCircle } from "ionicons/icons";
 import { useCallback, useMemo, useState } from "react";
 import {
-	MuscleChart,
 	findMuscleGroup,
+	MuscleChart,
 	type MuscleStatusMap,
 } from "../../../components/MuscleChart";
-import type { ExerciseType, Muscle } from "../../../lib/api-openapi-gen";
 import { api } from "../../../lib/api";
+import type { ExerciseType, Muscle } from "../../../lib/api-openapi-gen";
 import "./AdminExerciseModal.css";
 
 interface AdminExerciseModalProps {
@@ -218,20 +218,17 @@ export default function AdminExerciseModal({
 		setErrorMessage("");
 	}, []);
 
-	const handleAddBodyPart = useCallback(
-		(value: string) => {
-			const trimmed = value.trim();
-			if (!trimmed) return;
-			setBodyParts((prev) => {
-				const exists = prev.some(
-					(part) => normalizeValue(part) === normalizeValue(trimmed),
-				);
-				return exists ? prev : [...prev, trimmed];
-			});
-			setBodyPartInput("");
-		},
-		[setBodyParts],
-	);
+	const handleAddBodyPart = useCallback((value: string) => {
+		const trimmed = value.trim();
+		if (!trimmed) return;
+		setBodyParts((prev) => {
+			const exists = prev.some(
+				(part) => normalizeValue(part) === normalizeValue(trimmed),
+			);
+			return exists ? prev : [...prev, trimmed];
+		});
+		setBodyPartInput("");
+	}, []);
 
 	const handleRemoveBodyPart = useCallback((partToRemove: string) => {
 		setBodyParts((prev) => prev.filter((part) => part !== partToRemove));
@@ -322,9 +319,7 @@ export default function AdminExerciseModal({
 									<IonSelect
 										value={exerciseType}
 										placeholder="Select type"
-										onIonChange={(e) =>
-											setExerciseType(e.detail.value ?? "")
-										}
+										onIonChange={(e) => setExerciseType(e.detail.value ?? "")}
 									>
 										{exerciseTypes.map((type) => (
 											<IonSelectOption key={type} value={type}>
