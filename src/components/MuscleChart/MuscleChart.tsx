@@ -6,19 +6,19 @@ import { MuscleChartFront } from "./MuscleChartFront";
 export type MuscleStatus = "primary" | "secondary" | "none";
 
 export interface MuscleStatusMap {
-	[muscleId: string]: MuscleStatus;
+  [muscleId: string]: MuscleStatus;
 }
 
 interface MuscleChartProps {
-	/**
-	 * Map of muscle group IDs to their training status
-	 * e.g., { chest: "primary", biceps: "secondary", abs: "none" }
-	 */
-	muscles: MuscleStatusMap;
-	/**
-	 * Which view to display
-	 */
-	view: "front" | "back";
+  /**
+   * Map of muscle group IDs to their training status
+   * e.g., { chest: "primary", biceps: "secondary", abs: "none" }
+   */
+  muscles: MuscleStatusMap;
+  /**
+   * Which view to display
+   */
+  view: "front" | "back";
 }
 
 /**
@@ -38,37 +38,37 @@ interface MuscleChartProps {
  * ```
  */
 export function MuscleChart({ muscles, view }: MuscleChartProps) {
-	const getColor = useCallback(
-		(muscleId: string): string => {
-			const status = muscles[muscleId] ?? "none";
+  const getColor = useCallback(
+    (muscleId: string): string => {
+      const status = muscles[muscleId] ?? "none";
 
-			switch (status) {
-				case "primary":
-					return "var(--muscle-color-primary, var(--ion-color-primary))";
-				case "secondary":
-					return "var(--muscle-color-secondary, var(--ion-color-primary-tint))";
-				default:
-					return "var(--muscle-color-none, var(--ion-color-medium-tint))";
-			}
-		},
-		[muscles],
-	);
+      switch (status) {
+        case "primary":
+          return "var(--muscle-color-primary, var(--ion-color-primary))";
+        case "secondary":
+          return "var(--muscle-color-secondary, var(--ion-color-primary-tint))";
+        default:
+          return "var(--muscle-color-none, var(--ion-color-medium-tint))";
+      }
+    },
+    [muscles],
+  );
 
-	return (
-		<div className="muscle-chart-wrapper">
-			{view === "front" ? (
-				<MuscleChartFront getColor={getColor} />
-			) : (
-				<MuscleChartBack getColor={getColor} />
-			)}
-		</div>
-	);
+  return (
+    <div className="muscle-chart-wrapper">
+      {view === "front" ? (
+        <MuscleChartFront getColor={getColor} />
+      ) : (
+        <MuscleChartBack getColor={getColor} />
+      )}
+    </div>
+  );
 }
 
 export type { MuscleGroup, MuscleView } from "./muscle-map";
 // Re-export utilities
 export {
-	calculateMusclePercentage,
-	findMuscleGroup,
-	MUSCLE_GROUPS,
+  calculateMusclePercentage,
+  findMuscleGroup,
+  MUSCLE_GROUPS,
 } from "./muscle-map";
